@@ -30,7 +30,5 @@ validate() {
 cd "$(dirname "${BASH_SOURCE[0]}")"
 validate
 trap validate EXIT
-npx tailwindcss@3.1.8 -i <(
-    echo '@import "tailwindcss/base"; @import "tailwindcss/components"; @import "tailwindcss/utilities";'
-) -o ./index.css --watch &
+npx tailwindcss@3.1.8 -i ./tailwind.css -o ./index.css --watch &
 npx http-server -p 8000 -c-1

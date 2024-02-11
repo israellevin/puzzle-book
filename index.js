@@ -17,14 +17,12 @@ for(const row of JSON.parse((await (await fetch(
     if(sectionType === 'שם פרק') {
         chapter = template.cloneNode(true);
         chapter.id = `chapter-${chapterNumber}`;
-        chapter.style.display = 'flex';
         document.body.appendChild(chapter);
     }
     if(sectionType in templates) {
         section = templates[sectionType].cloneNode(true);
         delete section.id;
         section.textContent = row.c[3].v;
-        section.style.display = 'flex';
         chapter.appendChild(section);
     }
 }
