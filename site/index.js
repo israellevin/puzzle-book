@@ -4,126 +4,147 @@ import * as sheet from './sheet.js';
 const KEYS_FORWARDS = ['ArrowRight', 'Enter', 'Space', ' '];
 const FULL_SCREEN = ['fixed', 'left-0', 'top-0', 'w-full', 'h-full', 'bg-white', 'p-4', 'z-100'];
 
-// Virtual singleton rendering class.
-class Render {
+// Styled div container for a section.
+class Container {
+    constructor(parentNode, classes, append) {
+        this.parentNode = parentNode;
+        this.element = document.createElement('div');
+        this.element.classList.add(...classes);
+        append && this.appendSelf();
+    }
+    appendSelf() {
+        if(this.parentNode !== document.body && !this.parentNode.appended) {
+            this.parentNode.appendSelf();
+        }
+        this.parentNode.appendChild(this.element);
+        this.appended = true;
+    }
+    appendChild(element) {
+        return this.element.appendChild(element);
+    }
+    empty(node=this.element) {
+        for(let childIndex = node.childNodes.length - 1; childIndex >= 0; childIndex--) {
+            const child = node.childNodes[childIndex];
+            if(child.classList && child.classList.contains('_container')) {
+                this.empty(child);
+            } else {
+                child.remove();
+            }
+        }
+    }
+}
+
+// Styled section element.
+class Section {
+    constructor(tagName, text, classes, container) {
+        this.element = document.createElement(tagName);
+        this.element.textContent = text;
+        this.element.classList.add(...classes);
+        this.container = container;
+        if(!this.container.appended) {
+            this.container.appendSelf();
+        }
+        this.container.appendChild(this.element);
+    }
+}
+
+// Singleton book rendering class.
+class Book {
     static instance;
-    constructor(rowsGetter) {
-        // Singleton.
+    constructor() {
         if(new.target.instance) {
             return new.target.instance;
         }
-        // Virtual.
-        if(new.target === Render) {
-            throw new TypeError('Cannot construct Render instances directly');
-        }
 
-        this.root = document.createElement('div');
-        this.containers = {root: this.root};
-        rowsGetter().then((rows) => {
-            this.rows = rows;
-            this.index = 0;
-            this.pages = this.pageGenerator();
-            this.root.addEventListener('click', () => this.pages.next());
-            document.addEventListener('keydown', (event) => {
-                if(KEYS_FORWARDS.includes(event.key)) {
-                    this.pages.next();
-                }
-            });
-            this.root.classList.add(...FULL_SCREEN);
-            document.body.appendChild(this.root);
-        });
-    }
-    reusableContainer(sectionType) {
-        if(!this.containers[sectionType]) {
-            console.warn(`No container for ${sectionType}`);
-            this.containers[sectionType] = document.element;
-        } else if(!(this.containers[sectionType] instanceof HTMLElement)) {
-            const [parentElementId, classes] = this.containers[sectionType];
-            this.containers[sectionType] = document.createElement('div');
-            this.containers[sectionType].classList.add(...classes);
-            this.reusableContainer(parentElementId).appendChild(this.containers[sectionType]);
-        }
-        return this.containers[sectionType];
-    }
-    addSection(element, sectionType, clearBefore=false) {
-        const parentElement = this.reusableContainer(sectionType);
-        if(clearBefore) {
-            parentElement.innerHTML = '';
-        }
-        parentElement.appendChild(element);
+        this.containers = {root: new Container(document.body, [
+            '_container', '_container-root', ...FULL_SCREEN
+        ])};
+        this.containers.chapter = new Container(this.containers.root, [
+            '_container', '_container-chapter', 'text-center', 'bg-gray-100', 'p-4'
+        ]);
+        this.containers.chapterPreface = new Container(this.containers.chapter, [
+            '_container', '_container-chapterPreface', 'text-right', 'bg-gray-200'
+        ]);
+        this.containers.aside = new Container(this.containers.chapter, [
+            '_container', '_container-aside', 'fixed', 'left-0', 'top-0', 'w-1/4', 'bg-pink-200'
+        ]);
+
+        this.sectionTypes = Object.entries({
+            chapterName: {
+                tagName: 'h1',
+                classes: ['text-4xl'],
+                container: this.containers.chapter,
+                pauseBefore: true,
+                clearBefore: true
+            },
+            chapterSubtitle: {
+                tagName: 'h2',
+                classes: ['text-3xl'],
+                container: this.containers.chapter
+            },
+            chapterPreface: {
+                tagName: 'p',
+                classes: ['text-lg'],
+                container: this.containers.chapterPreface
+            },
+            asideTitle: {
+                tagName: 'h3',
+                classes: ['text-2xl'],
+                container: this.containers.aside
+            },
+            aside: {
+                tagName: 'p',
+                container: this.containers.aside
+            }
+        }).reduce((sectionTypes, [sectionType, section]) => ({
+            ...sectionTypes, [sectionType]: {
+                ...section, classes: [...(section.classes || []), `_${sectionType}`]
+            }
+        }), {});
     }
     * pageGenerator() {
-        while((this.row = this.rows[this.index]) !== undefined) {
+        let row;
+        while((row = this.rows[this.index]) !== undefined) {
             this.index++;
-            let section;
-            try {
-                section = this[this.row.sectionType]();
-            } catch(error) {
-                if(error instanceof TypeError) {
-                    console.warn(`Unknown section type: ${this.row.sectionType}`);
-                    continue;
-                }
-                throw error;
+
+            if(!(row.sectionType in this.sectionTypes)) {
+                console.warn(`Unknown section type: ${row.sectionType}`);
+                continue;
+            }
+            const sectionType = this.sectionTypes[row.sectionType];
+
+            if(this.index > 1 && sectionType.pauseBefore) {
+                yield;
             }
 
-            console.log(`Rendering ${this.row.sectionType}`);
-            const {element, pauseBefore, pauseAfter, clearBefore} = section;
+            if(sectionType.clearBefore) {
+                sectionType.container.empty();
+            }
 
-            if(this.index === 1) {
-                this.addSection(element, this.row.sectionType, clearBefore);
-            } else if(pauseBefore) {
-                console.log('pause before', this.row.sectionType);
+            new Section(sectionType.tagName, row.text, sectionType.classes, sectionType.container);
+            console.log('rendered', row.sectionType);
+
+            if(sectionType.pauseAfter) {
                 yield;
-                this.addSection(element, this.row.sectionType, clearBefore);
-            } else {
-                this.addSection(element, this.row.sectionType, clearBefore);
-                if(pauseAfter) {
-                    console.log('pause after', this.row.sectionType);
-                    yield;
-                }
             }
         }
     }
-}
-
-class PuzzleBook extends Render {
-    constructor(callback) {
-        super(sheet.get);
-        this.containers.chapter = ['root', ['text-2xl', 'text-center']];
-        this.containers.chapterName = ['chapter', ['text-4xl', 'text-center']];
-        this.containers.chapterSubtitle = ['chapter', ['text-3xl', 'text-center']];
-        this.containers.chapterPreface = ['chapter', ['bg-gray-200', 'p-4']];
-        this.containers.aside = ['chapter', ['fixed', 'left-0', 'top-0', 'w-1/4', 'bg-pink-200', 'p-4']];
-        this.containers.asideTitle = ['aside', ['text-2xl']];
-        callback && callback.call(this);
-    }
-    chapterName() {
-        const title = document.createElement('h1');
-        title.textContent = `פרק ${this.row.chapterNumber}: ${this.row.text}`;
-        title.classList.add('text-4xl', 'text-center');
-        return {element: title, pauseBefore: true, clearBefore: true};
-    }
-    chapterSubtitle() {
-        const subtitle = document.createElement('h2');
-        subtitle.textContent = this.row.text;
-        return {element: subtitle};
-    }
-    chapterPreface() {
-        const preface = document.createElement('p');
-        preface.textContent = this.row.text;
-        return {element: preface};
-    }
-    asideTitle() {
-        const title = document.createElement('h3');
-        title.textContent = this.row.text;
-        title.classList.add();
-        return {element: title};
-    }
-    aside() {
-        const aside = document.createElement('p');
-        aside.textContent = this.row.text;
-        return {element: aside};
+    start(rows, pageTo=0) {
+        this.rows = rows;
+        this.index = 0;
+        this.pages = this.pageGenerator();
+        this.containers.root.element.addEventListener('click', () => this.pages.next());
+        document.addEventListener('keydown', (event) => {
+            if(KEYS_FORWARDS.includes(event.key)) {
+                this.pages.next();
+            }
+        });
+        this.pages.next(pageTo);
     }
 }
 
-new PuzzleBook();
+sheet.get().then((rows) => {
+    const book = new Book();
+    const hash = window.location.hash;
+    book.start(rows, hash ? parseInt(hash.slice(1)) : 0);
+}).catch(console.error);
