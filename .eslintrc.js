@@ -33,6 +33,7 @@ module.exports = {
         'semi': ['error', 'always'],
         'space-before-function-paren': ['error', 'never'],
         'keyword-spacing': ['error', {after: false, overrides: {
+            'case': {'after': true},
             'const': {'after': true},
             'default': {'after': true},
             'else': {'after': true},
