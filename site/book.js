@@ -80,10 +80,12 @@ class Book {
         }
     }
     * pageGenerator() {
+        let showPageTimeout;
         let row;
         while((row = this.rows[this.index]) !== undefined) {
             this.index++;
-            window.location.hash = `#${this.index}`;
+            showPageTimeout && clearTimeout(showPageTimeout);
+            showPageTimeout = setTimeout(() => window.location.hash = `#${this.index}`, 1);
 
             if(!(row.sectionType in this.sectionTypes)) {
                 console.warn(`Unknown section type: ${row.sectionType}`);
