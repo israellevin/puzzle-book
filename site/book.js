@@ -65,17 +65,18 @@ class Book {
             return new.target.instance;
         }
         this.containers = {};
-        for(const [containerId, [parentId, classes]] of Object.entries(containerTypes)) {
-            this.containers[containerId] = new Container(this.containers[parentId] || document.body, [
-                '_container', `_${containerId}-container`, ...(classes || [])
-            ]);
+        for(const [containerId, {parentId, classes}] of Object.entries(containerTypes)) {
+            this.containers[containerId] = new Container(
+                this.containers[parentId] || document.body,
+                ['_container', `_${containerId}-container`, ...(classes || [])]
+            );
         }
         this.sectionTypes = {};
         for(const [sectionType, sectionProperties] of Object.entries(sectionTypes)) {
             this.sectionTypes[sectionType] = {
-                ...sectionProperties, container: this.containers[sectionProperties.containerId], classes: [
-                    '_section', `_${sectionType}-section`, ...(sectionProperties.classes || [])
-                ]
+                ...sectionProperties,
+                container: this.containers[sectionProperties.containerId],
+                classes: ['_section', `_${sectionType}-section`, ...(sectionProperties.classes || [])]
             };
         }
     }
