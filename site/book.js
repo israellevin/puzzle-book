@@ -5,7 +5,11 @@ const KEYS_FORWARDS = ['ArrowRight', 'Enter', 'Space', ' '];
 // Styled div container for a section.
 class Container {
     constructor(parentNode, classes, append) {
+        this.children = [];
         this.parentNode = parentNode;
+        if(this.parentNode instanceof Container) {
+            this.parentNode.children.push(this);
+        }
         this.element = document.createElement('div');
         this.element.classList.add(...classes);
         append && this.appendSelf();
@@ -17,17 +21,24 @@ class Container {
         this.parentNode.appendChild(this.element);
         this.appended = true;
     }
+    removeSelf() {
+        this.element.remove();
+        this.appended = false;
+    }
     appendChild(element) {
         return this.element.appendChild(element);
     }
-    empty(node=this.element) {
-        for(let childIndex = node.childNodes.length - 1; childIndex >= 0; childIndex--) {
-            const child = node.childNodes[childIndex];
-            if(child.classList && child.classList.contains('_container')) {
-                this.empty(child);
-            } else {
-                child.remove();
+    empty() {
+        this.removeSelf();
+        for(const child of this.children) {
+            child.empty();
+        }
+        for(let nodeIndex = this.element.childNodes.length - 1; nodeIndex >= 0; nodeIndex--) {
+            const childNode = this.element.childNodes[nodeIndex];
+            if(childNode.classList && childNode.classList.contains('_container')) {
+                continue;
             }
+            childNode.remove();
         }
     }
 }
@@ -72,6 +83,7 @@ class Book {
         let row;
         while((row = this.rows[this.index]) !== undefined) {
             this.index++;
+            window.location.hash = `#${this.index}`;
 
             if(!(row.sectionType in this.sectionTypes)) {
                 console.warn(`Unknown section type: ${row.sectionType}`);
@@ -98,6 +110,7 @@ class Book {
     start(rows, pageTo=0) {
         this.rows = rows;
         this.index = 0;
+        this.page = 0;
         this.pages = this.pageGenerator();
         this.containers.root.element.addEventListener('click', () => this.pages.next());
         document.addEventListener('keydown', (event) => {
@@ -105,7 +118,9 @@ class Book {
                 this.pages.next();
             }
         });
-        this.pages.next(pageTo);
+        while(pageTo > this.index) {
+            this.pages.next();
+        }
     }
 }
 

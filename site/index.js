@@ -40,7 +40,7 @@ const SECTION_TYPES = {
 };
 
 const puzzleBook = book.get(CONTAINER_TYPES, SECTION_TYPES);
-const page = (window.location.hash || '#0').slice(1);
+const page = (window.location.hash || '#1').slice(1);
 sheet.get().then((rows) => {
     puzzleBook.start(rows, page);
 }).catch(console.error);
