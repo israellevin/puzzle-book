@@ -1,0 +1,93 @@
+/* Puzzle book styles. */
+
+:root {
+    writing-mode: horizontal-tb;
+    direction: rtl;
+    text-orientation: mixed;
+    -webkit-text-size-adjust: 100%;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    line-height: 1.5;
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body,
+h1,
+h2,
+h3,
+p,
+blockquote {
+    margin: 0;
+}
+
+/* Headings inherit their size from the section type, not the browser. */
+h1,
+h2,
+h3 {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+._root-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    background-color: #fee2e2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+}
+
+._chapter-container {
+    width: 50%;
+    height: 75%;
+    background-color: #f3f4f6;
+    text-align: center;
+}
+
+._current-container {
+    padding: 0.25rem;
+    background-color: #e5e7eb;
+    text-align: right;
+}
+
+._aside-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 25%;
+    padding: 0.25rem;
+    background-color: #fbcfe8;
+}
+
+._chapterName-section {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+}
+
+._chapterSubtitle-section,
+._puzzleName-section {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+}
+
+._chapterPreface-section,
+._puzzlePreface-section {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+}
+
+._asideTitle-section {
+    font-size: 1.5rem;
+    line-height: 2rem;
+}
