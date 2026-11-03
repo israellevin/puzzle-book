@@ -16,7 +16,7 @@ validate_html() {
 }
 
 validate_js() {
-    npx eslint index.js && echo JS is valid || exit 1
+    npx eslint . && echo JS is valid || exit 1
 }
 
 cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1

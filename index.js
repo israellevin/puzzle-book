@@ -8,6 +8,7 @@ const CONTAINER_TYPES = {
     current: {parentId: 'chapter'},
     aside: {parentId: 'chapter'}
 };
+const LOAD_ERROR_MESSAGE = 'טעינת הספר נכשלה';
 
 const SECTION_TYPES = {
     chapterName: {tagName: 'h1', containerId: 'chapter', pauseBefore: true, clearBefore: true},
@@ -23,7 +24,10 @@ const SECTION_TYPES = {
 
 const puzzleBook = book.get(CONTAINER_TYPES, SECTION_TYPES);
 const hash = window.location.hash;
-const page = hash && hash.endsWith('!') ? parseInt(hash.slice(1, -1), 10) : 1;
+const page = parseInt(hash.slice(1), 10) || 1;
 sheet.get().then((rows) => {
     puzzleBook.start(rows, page);
-}).catch(console.error);
+}).catch((error) => {
+    console.error(error);
+    document.body.textContent = LOAD_ERROR_MESSAGE;
+});

@@ -1,5 +1,5 @@
 // Lint config for the site scripts.
-module.exports = [{
+export default [{
     languageOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module'

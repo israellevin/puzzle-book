@@ -41,9 +41,10 @@ const ROW_HEADER_MAP = Object.fromEntries(Object.entries(ROW_HEADER_NAMES).map((
 const SECTION_TYPE_MAP = Object.fromEntries(Object.entries(SECTION_TYPE_NAMES).map(([key, value]) => [value, key]));
 
 export const get = async() => {
-    const table = JSON.parse((await (await fetch(
+    const text = await (await fetch(
         `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq&gid=0`
-    )).text()).substr(47).slice(0, -2)).table;
+    )).text();
+    const table = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)).table;
     const headersMap = table.cols.map((col) => col.label);
     const rows = [];
     for(let rowIndex = 0; rowIndex < table.rows.length; rowIndex++) {
@@ -52,9 +53,10 @@ export const get = async() => {
             table.rows[rowIndex].c[0] && SECTION_TYPE_MAP[table.rows[rowIndex].c[0].v] || previousRow.sectionType
         );
         delete table.rows[rowIndex].c[0];
-        rows.push(table.rows[rowIndex].c.reduce((rowObject, cell, index) => ({
-            ...rowObject, [ROW_HEADER_MAP[headersMap[index]]]: cell && cell.v || previousRow[headersMap[index]]
-        }), {sectionType}));
+        rows.push(table.rows[rowIndex].c.reduce((rowObject, cell, index) => {
+            const key = ROW_HEADER_MAP[headersMap[index]];
+            return {...rowObject, [key]: cell?.v ?? previousRow[key]};
+        }, {sectionType}));
     }
     return rows;
 };

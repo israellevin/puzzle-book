@@ -57,13 +57,9 @@ class Section {
     }
 }
 
-// Singleton book rendering class.
+// Book rendering class.
 class Book {
-    static instance;
     constructor(containerTypes, sectionTypes) {
-        if(new.target.instance) {
-            return new.target.instance;
-        }
         this.containers = {};
         for(const [containerId, {parentId, classes}] of Object.entries(containerTypes)) {
             this.containers[containerId] = new Container(
@@ -102,7 +98,7 @@ class Book {
                 sectionType.container.empty();
             }
 
-            new Section(sectionType.tagName, row.text, sectionType.classes, sectionType.container);
+            new Section(sectionType.tagName, row.text ?? '', sectionType.classes, sectionType.container);
             console.log('rendered', row.sectionType);
 
             if(sectionType.pauseAfter) {
@@ -113,7 +109,6 @@ class Book {
     start(rows, pageTo=0) {
         this.rows = rows;
         this.index = 0;
-        this.page = 0;
         this.pages = this.pageGenerator();
         this.containers.root.element.addEventListener('click', () => this.pages.next());
         document.addEventListener('keydown', (event) => {
