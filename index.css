@@ -8,6 +8,8 @@
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
         'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
     line-height: 1.5;
+    color: #1f2937;
+    background-color: #fdf2f2;
 }
 
 *,
@@ -20,74 +22,350 @@ body,
 h1,
 h2,
 h3,
+h4,
 p,
-blockquote {
+blockquote,
+figure {
     margin: 0;
 }
 
-/* Headings inherit their size from the section type, not the browser. */
 h1,
 h2,
-h3 {
+h3,
+h4 {
     font-size: inherit;
     font-weight: inherit;
 }
 
+/* Page and panels */
+
 ._root-container {
     position: fixed;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    background-color: #fee2e2;
+    inset: 0;
+    padding: 1.5rem;
+    background-color: #fdf2f2;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: safe center;
     justify-content: center;
     overflow: auto;
+    touch-action: pan-y pinch-zoom;
 }
 
 ._chapter-container {
-    width: 50%;
-    height: 75%;
-    background-color: #f3f4f6;
-    text-align: center;
+    width: min(100%, 46rem);
+    max-height: 100%;
+    padding: 2.5rem 3rem;
+    overflow: auto;
+    border-radius: 1.5rem;
+    background-color: #ffffff;
+    box-shadow: 0 24px 60px -40px rgba(76, 5, 25, 0.55);
 }
 
-._current-container {
-    padding: 0.25rem;
-    background-color: #e5e7eb;
-    text-align: right;
-}
-
-._aside-container {
+._asideRight-container,
+._asideLeft-container {
     position: fixed;
-    left: 0;
-    top: 0;
-    width: 25%;
-    padding: 0.25rem;
-    background-color: #fbcfe8;
+    top: 1.5rem;
+    width: 16rem;
+    max-height: calc(100% - 3rem);
+    padding: 1.25rem;
+    overflow: auto;
+    border-radius: 1.25rem;
+    background-color: #fce7f3;
+    box-shadow: 0 24px 60px -44px rgba(76, 5, 25, 0.5);
+    font-size: 0.95rem;
 }
+
+._asideRight-container {
+    right: 1.5rem;
+}
+
+._asideLeft-container {
+    left: 1.5rem;
+}
+
+/* Chapter opening */
 
 ._chapterName-section {
-    font-size: 2.25rem;
-    line-height: 2.5rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    color: #7f1d1d;
 }
 
-._chapterSubtitle-section,
-._puzzleName-section {
-    font-size: 1.875rem;
-    line-height: 2.25rem;
+._chapterSubtitle-section {
+    margin-top: 0.35rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    color: #9f1239;
 }
 
-._chapterPreface-section,
-._puzzlePreface-section {
+._chapterPreface-section {
+    margin-top: 1.75rem;
     font-size: 1.125rem;
-    line-height: 1.75rem;
+    line-height: 1.9;
+    color: #374151;
 }
+
+/* Puzzle */
+
+._puzzlePreface-section {
+    margin-top: 1.5rem;
+    font-size: 1.0625rem;
+    line-height: 1.9;
+    color: #4b5563;
+}
+
+._puzzleName-section {
+    margin-top: 2rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #9f1239;
+}
+
+._puzzle-section {
+    margin-top: 0.85rem;
+    font-size: 1.125rem;
+    line-height: 1.9;
+}
+
+/* Clue levels: each gets the utensil it is named after. */
+
+._teaSpoon-section,
+._tableSpoon-section,
+._ladel-section,
+._bucket-section,
+._fork-section,
+._trident-section {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-top: 0.85rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.85rem;
+    background-color: #fffbeb;
+    color: #78350f;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+}
+
+._teaSpoon-section::before,
+._tableSpoon-section::before,
+._ladel-section::before,
+._bucket-section::before,
+._fork-section::before,
+._trident-section::before {
+    content: '';
+    flex: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-top: 0.3rem;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+._teaSpoon-section::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='8' cy='16' rx='3.2' ry='4.2' transform='rotate(-35 8 16)'/%3E%3Cpath d='M10.6 13.4 18 6'/%3E%3C/svg%3E");
+}
+
+._tableSpoon-section::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='7.5' cy='16.5' rx='4.2' ry='5.2' transform='rotate(-35 7.5 16.5)'/%3E%3Cpath d='M10.8 13.2 17 7'/%3E%3C/svg%3E");
+}
+
+._ladel-section::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h9v1a4.5 4.5 0 0 1-9 0Z'/%3E%3Cpath d='M14 12V7a2.5 2.5 0 0 1 5 0'/%3E%3C/svg%3E");
+}
+
+._bucket-section::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 8h10l-1.3 12H8.3L7 8Z'/%3E%3Cpath d='M9 8a3 3 0 0 1 6 0'/%3E%3C/svg%3E");
+}
+
+._fork-section::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3v4M12 3v4M16 3v4M7 7h10M12 7v14'/%3E%3C/svg%3E");
+}
+
+._trident-section::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8V3M12 8V3M18 8V3M5 8h14M12 8v13'/%3E%3Cpath d='M6 3 4 5M18 3l2 2'/%3E%3C/svg%3E");
+}
+
+._puzzleSolution-section {
+    margin-top: 0.85rem;
+    padding: 0.85rem 1.1rem;
+    border-inline-start: 3px solid #10b981;
+    border-radius: 0.85rem;
+    background-color: #ecfdf5;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+}
+
+._puzzleSolution-section::before {
+    content: 'פתרון';
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #047857;
+}
+
+/* Boxed digressions */
+
+._boxPreface-section,
+._boxName-section,
+._boxSubtitle-section,
+._box-section {
+    margin-top: 1rem;
+    padding: 0.35rem 1.1rem;
+    border-inline-start: 3px solid #c4b5fd;
+    background-color: #f6f4ff;
+    font-size: 1.0625rem;
+    line-height: 1.85;
+}
+
+._boxPreface-section,
+._boxName-section {
+    padding-top: 0.9rem;
+}
+
+._boxName-section {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+._boxSubtitle-section {
+    font-weight: 600;
+    color: #5b21b6;
+}
+
+._boxPreface-section + ._boxPreface-section,
+._boxPreface-section + ._boxName-section,
+._boxPreface-section + ._box-section,
+._boxName-section + ._boxName-section,
+._boxName-section + ._boxSubtitle-section,
+._boxName-section + ._box-section,
+._boxSubtitle-section + ._box-section,
+._box-section + ._box-section {
+    margin-top: 0;
+}
+
+/* Illustration frame. An empty file still leaves the frame and the file name. */
+
+._illustration-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 9rem;
+    margin-top: 1.25rem;
+    padding: 0.75rem;
+    border: 1px dashed #e7b6c8;
+    border-radius: 1rem;
+    background-color: #fff7fa;
+    color: #9d174d;
+    font-size: 0.85rem;
+}
+
+._illustration-section img {
+    display: block;
+    max-width: 100%;
+    max-height: 45vh;
+}
+
+/* Side panels */
 
 ._asideTitle-section {
-    font-size: 1.5rem;
-    line-height: 2rem;
+    margin-bottom: 0.4rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #9d174d;
+}
+
+._aside-section,
+._asideSolution-section {
+    margin-top: 0.6rem;
+    font-size: 1rem;
+    line-height: 1.75;
+    color: #4b5563;
+}
+
+._asideSolution-section {
+    margin-top: 0.9rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed #f9a8d4;
+    color: #831843;
+}
+
+._quote-section {
+    position: relative;
+    margin-top: 1rem;
+    padding-inline-start: 1.5rem;
+    font-size: 1.0625rem;
+    font-style: italic;
+    line-height: 1.85;
+    color: #6b7280;
+}
+
+._quote-section::before {
+    content: '"';
+    position: absolute;
+    inset-inline-start: 0;
+    top: -0.6rem;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: #f9a8d4;
+}
+
+/* Narrow screens: the panels dock along the bottom so they stay visible while the text moves. */
+
+@media (max-width: 84rem) {
+    ._root-container {
+        align-items: flex-start;
+        padding-bottom: 32vh;
+    }
+
+    ._chapter-container {
+        max-height: none;
+        overflow: visible;
+        padding: 2rem;
+    }
+
+    ._asideRight-container,
+    ._asideLeft-container {
+        top: auto;
+        bottom: 0.75rem;
+        width: calc(50% - 1rem);
+        max-height: 28vh;
+    }
+
+    ._asideRight-container {
+        right: 0.75rem;
+    }
+
+    ._asideLeft-container {
+        left: 0.75rem;
+    }
+}
+
+@media (max-width: 30rem) {
+    ._root-container {
+        padding: 0.75rem;
+        padding-bottom: 32vh;
+    }
+
+    ._chapter-container {
+        padding: 1.5rem 1.25rem;
+        border-radius: 1rem;
+    }
+
+    ._chapterName-section {
+        font-size: 2rem;
+    }
+
+    ._puzzleName-section {
+        font-size: 1.5rem;
+    }
 }
