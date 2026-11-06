@@ -40,6 +40,13 @@ const ROW_HEADER_MAP = Object.fromEntries(Object.entries(ROW_HEADER_NAMES).map((
 
 const SECTION_TYPE_MAP = Object.fromEntries(Object.entries(SECTION_TYPE_NAMES).map(([key, value]) => [value, key]));
 
+// Columns that describe their own row only; they must not leak into the rows below.
+const OWN_ROW_ONLY = ['remark'];
+
+// A quote or an illustration is a single row: an empty type after one falls back to the type
+// that was in force before it, not to the one-shot type itself.
+const ONE_TIME_TYPES = ['quote', 'illustration'];
+
 export const get = async() => {
     const text = await (await fetch(
         `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&tq&gid=0`
@@ -47,15 +54,19 @@ export const get = async() => {
     const table = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)).table;
     const headersMap = table.cols.map((col) => col.label);
     const rows = [];
+    let stickyType;
     for(let rowIndex = 0; rowIndex < table.rows.length; rowIndex++) {
         const previousRow = rows[rowIndex - 1] || {};
-        const sectionType = (
-            table.rows[rowIndex].c[0] && SECTION_TYPE_MAP[table.rows[rowIndex].c[0].v] || previousRow.sectionType
-        );
+        const ownType = table.rows[rowIndex].c[0] && SECTION_TYPE_MAP[table.rows[rowIndex].c[0].v];
+        const sectionType = ownType || stickyType;
+        if(ownType && !ONE_TIME_TYPES.includes(ownType)) {
+            stickyType = ownType;
+        }
         delete table.rows[rowIndex].c[0];
         rows.push(table.rows[rowIndex].c.reduce((rowObject, cell, index) => {
             const key = ROW_HEADER_MAP[headersMap[index]];
-            return {...rowObject, [key]: cell?.v ?? previousRow[key]};
+            const fallback = OWN_ROW_ONLY.includes(key) ? undefined : previousRow[key];
+            return {...rowObject, [key]: cell?.v ?? fallback};
         }, {sectionType}));
     }
     return rows;

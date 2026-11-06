@@ -43,17 +43,21 @@ h4 {
 ._root-container {
     position: fixed;
     inset: 0;
-    padding: 1.5rem;
-    background-color: #fdf2f2;
-    display: flex;
-    align-items: safe center;
+    padding: 1.25rem;
+    display: grid;
+    grid-template-columns: 16rem minmax(0, 46rem) 16rem;
     justify-content: center;
-    overflow: auto;
+    gap: 1.25rem;
+    background-color: #fdf2f2;
+    overflow: hidden;
     touch-action: pan-y pinch-zoom;
 }
 
 ._chapter-container {
-    width: min(100%, 46rem);
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    min-height: 0;
     max-height: 100%;
     padding: 2.5rem 3rem;
     overflow: auto;
@@ -64,10 +68,9 @@ h4 {
 
 ._asideRight-container,
 ._asideLeft-container {
-    position: fixed;
-    top: 1.5rem;
-    width: 16rem;
-    max-height: calc(100% - 3rem);
+    grid-row: 1;
+    align-self: start;
+    max-height: 100%;
     padding: 1.25rem;
     overflow: auto;
     border-radius: 1.25rem;
@@ -76,12 +79,13 @@ h4 {
     font-size: 0.95rem;
 }
 
+/* In RTL the first grid column is the right-hand side. */
 ._asideRight-container {
-    right: 1.5rem;
+    grid-column: 1;
 }
 
 ._asideLeft-container {
-    left: 1.5rem;
+    grid-column: 3;
 }
 
 /* Chapter opening */
@@ -194,23 +198,20 @@ h4 {
 }
 
 ._puzzleSolution-section {
+    display: block;
     margin-top: 0.85rem;
-    padding: 0.85rem 1.1rem;
-    border-inline-start: 3px solid #10b981;
-    border-radius: 0.85rem;
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #a7f3d0;
+    border-radius: 999px;
     background-color: #ecfdf5;
-    font-size: 1.0625rem;
-    line-height: 1.85;
+    color: #047857;
+    font: inherit;
+    font-size: 1rem;
+    cursor: pointer;
 }
 
-._puzzleSolution-section::before {
-    content: 'פתרון';
-    display: block;
-    margin-bottom: 0.35rem;
-    font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: #047857;
+._puzzleSolution-section:hover {
+    background-color: #d1fae5;
 }
 
 /* Boxed digressions */
@@ -310,6 +311,43 @@ h4 {
     color: #6b7280;
 }
 
+._quote-section cite {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+    font-style: normal;
+    color: #9d174d;
+}
+
+._quote-section cite::before {
+    content: '— ';
+}
+
+/* Footnotes: the mark in the text and the note at the bottom link to each other. */
+
+._footnotes-container {
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f3d4df;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: #4b5563;
+}
+
+._footnote {
+    margin-top: 0.6rem;
+}
+
+._footnote a,
+._section sup a {
+    color: #9d174d;
+    text-decoration: none;
+}
+
+._section sup {
+    margin-inline-start: 0.1rem;
+}
+
 ._quote-section::before {
     content: '"';
     position: absolute;
@@ -320,45 +358,47 @@ h4 {
     color: #f9a8d4;
 }
 
-/* Narrow screens: the panels dock along the bottom so they stay visible while the text moves. */
+/* Narrow screens: one column, the panels in their own row under the card. */
 
 @media (max-width: 84rem) {
     ._root-container {
-        align-items: flex-start;
-        padding-bottom: 32vh;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) auto;
+        gap: 0.75rem;
+        padding: 0.75rem;
     }
 
     ._chapter-container {
-        max-height: none;
-        overflow: visible;
-        padding: 2rem;
+        grid-column: 1 / -1;
+        grid-row: 1;
+        align-self: stretch;
+        padding: 2.75rem 2rem 2rem;
     }
 
     ._asideRight-container,
     ._asideLeft-container {
-        top: auto;
-        bottom: 0.75rem;
-        width: calc(50% - 1rem);
-        max-height: 28vh;
+        grid-row: 2;
+        align-self: start;
+        max-height: 30vh;
+        padding: 1rem;
     }
 
     ._asideRight-container {
-        right: 0.75rem;
+        grid-column: 1;
     }
 
     ._asideLeft-container {
-        left: 0.75rem;
+        grid-column: 2;
     }
 }
 
 @media (max-width: 30rem) {
     ._root-container {
         padding: 0.75rem;
-        padding-bottom: 32vh;
     }
 
     ._chapter-container {
-        padding: 1.5rem 1.25rem;
+        padding: 2.5rem 1.25rem 1.5rem;
         border-radius: 1rem;
     }
 
@@ -369,4 +409,128 @@ h4 {
     ._puzzleName-section {
         font-size: 1.5rem;
     }
+}
+
+/* Dialog: solutions and the table of contents. */
+
+._modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background-color: rgba(76, 5, 25, 0.45);
+}
+
+._modal {
+    position: relative;
+    width: min(100%, 40rem);
+    max-height: 85vh;
+    padding: 2rem;
+    overflow: auto;
+    border-radius: 1.25rem;
+    background-color: #ffffff;
+    box-shadow: 0 30px 70px -30px rgba(76, 5, 25, 0.6);
+    font-size: 1.0625rem;
+    line-height: 1.85;
+}
+
+._modal-body {
+    white-space: pre-line;
+}
+
+._modal-close {
+    position: absolute;
+    top: 0.6rem;
+    inset-inline-end: 0.6rem;
+    width: 2rem;
+    height: 2rem;
+    border: 0;
+    border-radius: 50%;
+    background-color: #fce7f3;
+    color: #9d174d;
+    font: inherit;
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+/* Contents */
+
+._toc-button {
+    position: fixed;
+    top: 0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    padding: 0.35rem 1rem;
+    border: 1px solid #f3d4df;
+    border-radius: 999px;
+    background-color: #ffffff;
+    color: #9d174d;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 10px 30px -22px rgba(76, 5, 25, 0.7);
+}
+
+._toc {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+}
+
+._toc-chapter,
+._toc-puzzle,
+._toc-box {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+._toc-chapter {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #7f1d1d;
+}
+
+._toc-chapter:first-child {
+    margin-top: 0;
+}
+
+._toc-puzzle {
+    padding-inline-start: 1.25rem;
+    color: #4b5563;
+}
+
+._toc-box {
+    padding-inline-start: 2.5rem;
+    font-size: 0.95rem;
+    color: #6b7280;
+}
+
+._toc-chapter:hover,
+._toc-puzzle:hover,
+._toc-box:hover {
+    color: #9d174d;
+    text-decoration: underline;
+}
+
+/* A chunk is everything since the last break; only one is on screen at a time. */
+
+[hidden] {
+    display: none !important;
+}
+
+._chapterHead,
+._chunk {
+    display: block;
 }
