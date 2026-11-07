@@ -2,16 +2,16 @@
 const SHEET_ID = '1dBa9n4e4lalgaLHgemz9O6eQ3mkDIJQ_iKDmLGfdN0U';
 
 const ROW_HEADER_NAMES = {
-    sectionType: 'סוג דבר',
+    itemType: 'סוג דבר',
     chapterNumber: 'מספר פרק',
     puzzleNumber: 'מספר חידה',
     text: 'טקסט',
-    remark: 'הערת שוליים',
+    footnote: 'הערת שוליים',
     source: 'מקור',
     file: 'קובץ'
 };
 
-const SECTION_TYPE_NAMES = {
+const ITEM_TYPE_NAMES = {
     illustration: 'איור',
     box: 'בוקסה',
     bucket: 'דלי',
@@ -38,10 +38,10 @@ const SECTION_TYPE_NAMES = {
 
 const ROW_HEADER_MAP = Object.fromEntries(Object.entries(ROW_HEADER_NAMES).map(([key, value]) => [value, key]));
 
-const SECTION_TYPE_MAP = Object.fromEntries(Object.entries(SECTION_TYPE_NAMES).map(([key, value]) => [value, key]));
+const ITEM_TYPE_MAP = Object.fromEntries(Object.entries(ITEM_TYPE_NAMES).map(([key, value]) => [value, key]));
 
 // Columns that describe their own row only; they must not leak into the rows below.
-const OWN_ROW_ONLY = ['remark'];
+const OWN_ROW_ONLY = ['footnote'];
 
 // A quote or an illustration is a single row: an empty type after one falls back to the type
 // that was in force before it, not to the one-shot type itself.
@@ -57,8 +57,8 @@ export const get = async() => {
     let stickyType;
     for(let rowIndex = 0; rowIndex < table.rows.length; rowIndex++) {
         const previousRow = rows[rowIndex - 1] || {};
-        const ownType = table.rows[rowIndex].c[0] && SECTION_TYPE_MAP[table.rows[rowIndex].c[0].v];
-        const sectionType = ownType || stickyType;
+        const ownType = table.rows[rowIndex].c[0] && ITEM_TYPE_MAP[table.rows[rowIndex].c[0].v];
+        const itemType = ownType || stickyType;
         if(ownType && !ONE_TIME_TYPES.includes(ownType)) {
             stickyType = ownType;
         }
@@ -67,7 +67,7 @@ export const get = async() => {
             const key = ROW_HEADER_MAP[headersMap[index]];
             const fallback = OWN_ROW_ONLY.includes(key) ? undefined : previousRow[key];
             return {...rowObject, [key]: cell?.v ?? fallback};
-        }, {sectionType}));
+        }, {itemType: itemType}));
     }
     return rows;
 };
