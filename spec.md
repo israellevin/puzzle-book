@@ -45,7 +45,7 @@ Each row has the following (optionally empty) fields:
 
 Note that an empty `itemType` does not always behave the same as one that is identical to the type of the previous row, as the first case adds another paragraph to the previous row, while an explicit type creates a new item, so for `quote`, `aside`, `solution`, and all the clue types, an empty `itemType` is a multi-paragraph item while an explicit repetition indicates two separate items.
 
-For this reason, a row with an empty `itemType` should not declare `chapterNumber`, `puzzleNumber` or `source` and such values will be ignored with an error.
+For this reason, a row with an empty `itemType` should not declare a conflicting `chapterNumber`, `puzzleNumber` or `source` and conflicting values will be ignored with an error and only the first value respected.
 
 ## Breaks and Pages
 
@@ -82,7 +82,7 @@ The main page, scrollable, used to display long texts. All items not mentioned e
 
 When showing a puzzle, the page will usually have clues (`teaSpoon`, `tableSpoon`, `ladel`, `bucket`, `fork`, `trident`) and a solution (`puzzleSolution`). These are all initially displayed only as a disabled button with a matching icon and the text hidden.
 
-After scrolling to the bottom of the page, the button of the first clue becomes active in a nice, eye-catching animation. Once it's clicked, the button fades out and the text of the clue or solution become visible. The remaining clue/solution buttons remain at the bottom. Once that bottom is reached, the next button becomes active, and so on.
+After scrolling to the bottom of the page, the button of the first clue becomes active in a nice, eye-catching animation. Once it's clicked, the button fades out and the text of the clue or solution become visible. The remaining clue/solution buttons remain at the bottom. Once that bottom is reached (or instantly, if we are already at the bottom), the next button becomes active, and so on.
 
 A single clue/solution may be comprised of several rows inheriting the same type, all of
 them shown with a single button. Rows that are each explicitly typed are separate items
@@ -93,16 +93,13 @@ Every time a puzzle page is displayed, all clues/solutions are hidden anew.
 #### Footnotes
 
 Displays the page's `footnote`s at the very bottom of `main`, numbered in order of
-appearance. Each superscript number links to its note and each note links back. `footnotes` of un-expanded items should be redacted (only the number showing, no active link, text visibly redacted).
+appearance. Each superscript number links to its note, shows that note as a tooltip, and each note links back. `footnotes` of un-expanded items should be redacted (only the number showing, no active link, text visibly redacted).
 
 ### `margin`
 
-The spaces on the sides of `main`, used to display short texts, being either a `quote` (displaying `text` along with `source`) or `aside` (grouping `asideTitle` and `asideSolution` if they exist).
+The spaces on the sides of `main`, used to display short texts, being either a `quote` (displaying `text` along with `source`) or `aside` (grouping `asideTitle` and `asideSolution` if they exist). The `asideSolution` is un-expanded behind a button, like a puzzle solution, but the button is always active.
 
-The first margin item of a page is displayed on the right, the second on the left, the
-third again on the right (below the first) and so on. How the margins are laid out is
-CSS: the page provides a class per arrangement (flanking the page, stacked beneath it,
-and so on), so they can be swapped without touching the code.
+The first margin item of a page is displayed on the right, the second on the left, the third again on the right (below the first) and so on.
 
 ## Paging
 

@@ -1,10 +1,7 @@
 /* Puzzle book styles. */
 
 :root {
-    writing-mode: horizontal-tb;
     direction: rtl;
-    text-orientation: mixed;
-    -webkit-text-size-adjust: 100%;
     /* Hebrew first: in the generic stack below, DejaVu positions niqqud off to the side. */
     font-family: 'Noto Sans Hebrew', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
         'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
@@ -38,229 +35,256 @@ h4 {
     font-weight: inherit;
 }
 
-/* Page and panels */
+[hidden] {
+    display: none !important;
+}
 
-._root-container {
-    position: fixed;
-    inset: 0;
-    padding: 1.25rem;
-    display: grid;
-    grid-template-columns: 16rem minmax(0, 46rem) 16rem;
-    justify-content: center;
-    gap: 1.25rem;
+/* --- arrangements ---
+   `_layout-sides` flanks main with the margins, `_layout-below` stacks them under it,
+   `_layout-overlay` floats them over the page beside a padded main. */
+
+._book {
+    height: 100vh;
+    height: 100dvh;
     background-color: #fdf2f2;
-    overflow: hidden;
-    touch-action: pan-y pinch-zoom;
 }
 
-._chapter-container {
+._layout-sides {
+    display: grid;
+    grid-template-columns: 16rem minmax(0, 1fr) 16rem;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+}
+
+._layout-sides ._header {
+    grid-column: 1 / -1;
+}
+
+._layout-sides ._main {
     grid-column: 2;
-    grid-row: 1;
-    align-self: center;
-    min-height: 0;
-    max-height: 100%;
-    padding: 2.5rem 3rem;
+    grid-row: 2;
     overflow: auto;
-    border-radius: 1.5rem;
-    background-color: #ffffff;
-    box-shadow: 0 24px 60px -40px rgba(76, 5, 25, 0.55);
 }
 
-._asideRight-container,
-._asideLeft-container {
-    grid-row: 1;
-    align-self: start;
-    max-height: 100%;
-    padding: 1.25rem;
-    overflow: auto;
-    border-radius: 1.25rem;
-    background-color: #fce7f3;
-    box-shadow: 0 24px 60px -44px rgba(76, 5, 25, 0.5);
-    font-size: 0.95rem;
-}
-
-/* In RTL the first grid column is the right-hand side. */
-._asideRight-container {
+._layout-sides ._marginRight {
     grid-column: 1;
+    grid-row: 2;
+    overflow: auto;
 }
 
-._asideLeft-container {
+._layout-sides ._marginLeft {
     grid-column: 3;
+    grid-row: 2;
+    overflow: auto;
 }
 
-/* Chapter opening */
+._layout-below {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    padding: 0.75rem;
+}
 
-._chapterName-section {
-    font-size: 2.5rem;
+._layout-below ._header,
+._layout-below ._main {
+    grid-column: 1 / -1;
+}
+
+._layout-below ._main {
+    grid-row: 2;
+    overflow: auto;
+}
+
+._layout-below ._marginRight {
+    grid-column: 1;
+    grid-row: 3;
+    max-height: 30vh;
+    overflow: auto;
+}
+
+._layout-below ._marginLeft {
+    grid-column: 2;
+    grid-row: 3;
+    max-height: 30vh;
+    overflow: auto;
+}
+
+._layout-overlay {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    padding: 0 17rem;
+}
+
+._layout-overlay ._main {
+    grid-row: 2;
+    overflow: auto;
+}
+
+._layout-overlay ._margin {
+    position: fixed;
+    top: 5.5rem;
+    width: 15rem;
+    max-height: calc(100vh - 7rem);
+    overflow: auto;
+}
+
+._layout-overlay ._marginRight {
+    right: 0.75rem;
+}
+
+._layout-overlay ._marginLeft {
+    left: 0.75rem;
+}
+
+@media (max-width: 80rem) {
+    ._layout-sides {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+    }
+
+    ._layout-sides ._main {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    ._layout-sides ._marginRight {
+        grid-column: 1;
+        grid-row: 3;
+        max-height: 30vh;
+    }
+
+    ._layout-sides ._marginLeft {
+        grid-column: 2;
+        grid-row: 3;
+        max-height: 30vh;
+    }
+
+    ._layout-overlay {
+        padding: 0;
+    }
+
+    ._layout-overlay ._margin {
+        position: static;
+        width: auto;
+        max-height: 25vh;
+        margin: 0 0.75rem;
+    }
+}
+
+/* --- header --- */
+
+._header {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.5rem;
+}
+
+._bookTitle {
+    font-size: 1.05rem;
     font-weight: 700;
-    line-height: 1.2;
-    text-align: center;
     color: #7f1d1d;
 }
 
-._chapterSubtitle-section {
-    margin-top: 0.35rem;
-    font-size: 1.5rem;
-    font-weight: 600;
-    line-height: 1.3;
-    text-align: center;
-    color: #9f1239;
-}
-
-._chapterPreface-section {
-    margin-top: 1.75rem;
-    font-size: 1.125rem;
-    line-height: 1.9;
-    color: #374151;
-}
-
-/* Puzzle */
-
-._puzzlePreface-section {
-    margin-top: 1.5rem;
-    font-size: 1.0625rem;
-    line-height: 1.9;
-    color: #4b5563;
-}
-
-._puzzleName-section {
-    margin-top: 2rem;
-    font-size: 1.75rem;
-    font-weight: 700;
-    line-height: 1.3;
-    color: #9f1239;
-}
-
-._puzzle-section {
-    margin-top: 0.85rem;
-    font-size: 1.125rem;
-    line-height: 1.9;
-}
-
-/* Clue levels: each gets the utensil it is named after. */
-
-._teaSpoon-section,
-._tableSpoon-section,
-._ladel-section,
-._bucket-section,
-._fork-section,
-._trident-section {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-top: 0.85rem;
-    padding: 0.75rem 1rem;
-    border-radius: 0.85rem;
-    background-color: #fffbeb;
-    color: #78350f;
-    font-size: 1.0625rem;
-    line-height: 1.85;
-}
-
-._teaSpoon-section::before,
-._tableSpoon-section::before,
-._ladel-section::before,
-._bucket-section::before,
-._fork-section::before,
-._trident-section::before {
-    content: '';
-    flex: none;
-    width: 1.5rem;
-    height: 1.5rem;
-    margin-top: 0.3rem;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
-}
-
-._teaSpoon-section::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='8' cy='16' rx='3.2' ry='4.2' transform='rotate(-35 8 16)'/%3E%3Cpath d='M10.6 13.4 18 6'/%3E%3C/svg%3E");
-}
-
-._tableSpoon-section::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cellipse cx='7.5' cy='16.5' rx='4.2' ry='5.2' transform='rotate(-35 7.5 16.5)'/%3E%3Cpath d='M10.8 13.2 17 7'/%3E%3C/svg%3E");
-}
-
-._ladel-section::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h9v1a4.5 4.5 0 0 1-9 0Z'/%3E%3Cpath d='M14 12V7a2.5 2.5 0 0 1 5 0'/%3E%3C/svg%3E");
-}
-
-._bucket-section::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 8h10l-1.3 12H8.3L7 8Z'/%3E%3Cpath d='M9 8a3 3 0 0 1 6 0'/%3E%3C/svg%3E");
-}
-
-._fork-section::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3v4M12 3v4M16 3v4M7 7h10M12 7v14'/%3E%3C/svg%3E");
-}
-
-._trident-section::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b45309' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8V3M12 8V3M18 8V3M5 8h14M12 8v13'/%3E%3Cpath d='M6 3 4 5M18 3l2 2'/%3E%3C/svg%3E");
-}
-
-._puzzleSolution-section {
-    display: block;
-    margin-top: 0.85rem;
-    padding: 0.6rem 1.2rem;
-    border: 1px solid #a7f3d0;
-    border-radius: 999px;
-    background-color: #ecfdf5;
-    color: #047857;
+._selector {
+    padding: 0.25rem 0.6rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: none;
+    color: #9d174d;
     font: inherit;
-    font-size: 1rem;
+    font-size: 0.95rem;
     cursor: pointer;
 }
 
-._puzzleSolution-section:hover {
-    background-color: #d1fae5;
+._selector:hover,
+._selector:focus-visible {
+    background-color: #fce7f3;
 }
 
-/* Boxed digressions */
+._search {
+    margin-inline-start: 0;
+    padding: 0.25rem 0.7rem;
+    border: 1px solid #f3d4df;
+    border-radius: 999px;
+    font: inherit;
+    font-size: 0.9rem;
+    background-color: #ffffff;
+}
 
-._boxPreface-section,
-._boxName-section,
-._boxSubtitle-section,
-._box-section {
-    margin-top: 1rem;
-    padding: 0.35rem 1.1rem;
-    border-inline-start: 3px solid #c4b5fd;
-    background-color: #f6f4ff;
+._dropdown {
+    position: absolute;
+    top: 100%;
+    inset-inline-start: 0.5rem;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    max-height: 60vh;
+    padding: 0.4rem;
+    overflow: auto;
+    border: 1px solid #f3d4df;
+    border-radius: 0.75rem;
+    background-color: #ffffff;
+    box-shadow: 0 20px 50px -30px rgba(76, 5, 25, 0.6);
+    animation: _appear 140ms ease;
+}
+
+._dropdownItem {
+    padding: 0.35rem 0.6rem;
+    border: 0;
+    border-radius: 0.5rem;
+    background: none;
+    color: #4b5563;
+    font: inherit;
+    font-size: 0.95rem;
+    text-align: start;
+    cursor: pointer;
+}
+
+._dropdownItem:hover,
+._dropdownItem._selected {
+    background-color: #fce7f3;
+    color: #9d174d;
+}
+
+/* --- main --- */
+
+._main {
+    padding: 0.5rem 1.5rem 4rem;
+}
+
+._paragraph {
+    margin-top: 0.9rem;
     font-size: 1.0625rem;
-    line-height: 1.85;
+    line-height: 1.9;
 }
 
-._boxPreface-section,
-._boxName-section {
-    padding-top: 0.9rem;
-}
-
-._boxName-section {
-    font-size: 1.2rem;
+h2._paragraph,
+h3._paragraph {
+    margin-top: 1.75rem;
     font-weight: 700;
+    line-height: 1.3;
+    color: #9f1239;
 }
 
-._boxSubtitle-section {
-    font-weight: 600;
-    color: #5b21b6;
+h2._paragraph {
+    font-size: 1.6rem;
 }
 
-._boxPreface-section + ._boxPreface-section,
-._boxPreface-section + ._boxName-section,
-._boxPreface-section + ._box-section,
-._boxName-section + ._boxName-section,
-._boxName-section + ._boxSubtitle-section,
-._boxName-section + ._box-section,
-._boxSubtitle-section + ._box-section,
-._box-section + ._box-section {
-    margin-top: 0;
+h3._paragraph {
+    font-size: 1.3rem;
 }
 
-/* Illustration frame. An empty file still leaves the frame and the file name. */
-
-._illustration-section {
+._illustration {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 9rem;
+    min-height: 8rem;
     margin-top: 1.25rem;
     padding: 0.75rem;
     border: 1px dashed #e7b6c8;
@@ -270,267 +294,259 @@ h4 {
     font-size: 0.85rem;
 }
 
-._illustration-section img {
+._illustration img {
     display: block;
     max-width: 100%;
     max-height: 45vh;
 }
 
-/* Side panels */
-
-._asideTitle-section {
-    margin-bottom: 0.4rem;
-    font-size: 1.15rem;
-    font-weight: 700;
-    line-height: 1.35;
-    color: #9d174d;
+._illustrationMissing {
+    padding: 1.5rem;
 }
 
-._aside-section,
-._asideSolution-section {
-    margin-top: 0.6rem;
-    font-size: 1rem;
-    line-height: 1.75;
+/* --- clues and solutions --- */
+
+._clues {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    margin-top: 2.5rem;
+}
+
+._clue {
+    width: 100%;
+}
+
+._clueButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background-color: #f9fafb;
     color: #4b5563;
+    font: inherit;
+    font-size: 0.95rem;
+    cursor: default;
+    opacity: 0.55;
+    transition: opacity 160ms ease, box-shadow 160ms ease;
 }
 
-._asideSolution-section {
-    margin-top: 0.9rem;
-    padding-top: 0.7rem;
-    border-top: 1px dashed #f9a8d4;
-    color: #831843;
+._clueButton._active {
+    cursor: pointer;
+    opacity: 1;
+    box-shadow: 0 0 0 3px #fbcfe8;
+    animation: _clue-pulse 1.4s ease-in-out infinite;
 }
 
-._quote-section {
-    position: relative;
-    margin-top: 1rem;
-    padding-inline-start: 1.5rem;
-    font-size: 1.0625rem;
-    font-style: italic;
-    line-height: 1.85;
-    color: #6b7280;
+._clueButton._active:hover {
+    background-color: #fce7f3;
 }
 
-._quote-section cite {
-    display: block;
-    margin-top: 0.4rem;
-    font-size: 0.9rem;
-    font-style: normal;
-    color: #9d174d;
+._clueLabel {
+    font-size: 0.95rem;
 }
 
-._quote-section cite::before {
-    content: '— ';
+._clueBody {
+    margin-top: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    border-inline-start: 3px solid #f9a8d4;
+    border-radius: 0.75rem;
+    background-color: #fff7fa;
+    animation: _appear 260ms ease;
 }
 
-/* Footnotes: the mark in the text and the note at the bottom link to each other. */
+._clueBody ._paragraph {
+    margin-top: 0.5rem;
+}
 
-._footnotes-container {
+@keyframes _clue-pulse {
+    50% {
+        box-shadow: 0 0 0 7px #fbcfe8;
+    }
+}
+
+@keyframes _appear {
+    from {
+        opacity: 0;
+        transform: translateY(0.4rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ._clueButton._active {
+        animation: none;
+    }
+
+    ._asideSolutionText,
+    ._clueBody,
+    ._footnotes,
+    ._marginItem,
+    ._dropdown,
+    ._errors {
+        animation: none;
+    }
+
+    ._margin {
+        transition: none;
+    }
+}
+
+/* --- footnotes --- */
+
+._footnotes {
     margin-top: 2.5rem;
     padding-top: 1rem;
     border-top: 1px solid #f3d4df;
     font-size: 0.9rem;
     line-height: 1.75;
     color: #4b5563;
+    animation: _appear 220ms ease;
 }
 
 ._footnote {
-    margin-top: 0.6rem;
+    margin-top: 0.5rem;
 }
 
-._footnote a,
-._section sup a {
+._footnoteNumber {
+    font-weight: 700;
+    color: #9d174d;
+}
+
+._footnote._redacted ._footnoteText {
+    border-radius: 0.25rem;
+    background-color: #9ca3af;
+    color: transparent;
+    user-select: none;
+}
+
+._footnoteBack,
+._footnoteMark a {
     color: #9d174d;
     text-decoration: none;
 }
 
-._section sup {
+._footnoteBack {
+    margin-inline-start: 0.35rem;
+}
+
+._footnoteMark {
     margin-inline-start: 0.1rem;
 }
 
-._quote-section::before {
-    content: '"';
-    position: absolute;
-    inset-inline-start: 0;
-    top: -0.6rem;
-    font-size: 2.5rem;
-    line-height: 1;
-    color: #f9a8d4;
+/* --- errors --- */
+
+._errors {
+    margin: 1rem 0;
+    padding: 0.9rem 1rem;
+    border: 1px solid #fecaca;
+    border-radius: 0.75rem;
+    background-color: #fef2f2;
+    color: #991b1b;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    animation: _appear 220ms ease;
 }
 
-/* Narrow screens: one column, the panels in their own row under the card. */
-
-@media (max-width: 84rem) {
-    ._root-container {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-rows: minmax(0, 1fr) auto;
-        gap: 0.75rem;
-        padding: 0.75rem;
-    }
-
-    ._chapter-container {
-        grid-column: 1 / -1;
-        grid-row: 1;
-        align-self: stretch;
-        padding: 2.75rem 2rem 2rem;
-    }
-
-    ._asideRight-container,
-    ._asideLeft-container {
-        grid-row: 2;
-        align-self: start;
-        max-height: 30vh;
-        padding: 1rem;
-    }
-
-    ._asideRight-container {
-        grid-column: 1;
-    }
-
-    ._asideLeft-container {
-        grid-column: 2;
-    }
+._errorsTitle {
+    display: block;
+    margin-bottom: 0.35rem;
 }
 
-@media (max-width: 30rem) {
-    ._root-container {
-        padding: 0.75rem;
-    }
+/* --- margins --- */
 
-    ._chapter-container {
-        padding: 2.5rem 1.25rem 1.5rem;
-        border-radius: 1rem;
-    }
-
-    ._chapterName-section {
-        font-size: 2rem;
-    }
-
-    ._puzzleName-section {
-        font-size: 1.5rem;
-    }
-}
-
-/* Dialog: solutions and the table of contents. */
-
-._modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 20;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    background-color: rgba(76, 5, 25, 0.45);
-}
-
-._modal {
+._margin {
     position: relative;
-    width: min(100%, 40rem);
-    max-height: 85vh;
-    padding: 2rem;
-    overflow: auto;
-    border-radius: 1.25rem;
-    background-color: #ffffff;
-    box-shadow: 0 30px 70px -30px rgba(76, 5, 25, 0.6);
-    font-size: 1.0625rem;
-    line-height: 1.85;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 200ms ease;
 }
 
-._modal-body {
-    white-space: pre-line;
+._margin._shown {
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
-._modal-close {
+._margin::after {
     position: absolute;
-    top: 0.6rem;
-    inset-inline-end: 0.6rem;
-    width: 2rem;
-    height: 2rem;
-    border: 0;
-    border-radius: 50%;
-    background-color: #fce7f3;
-    color: #9d174d;
-    font: inherit;
-    font-size: 1.25rem;
+    top: 50%;
+    content: '';
+    direction: ltr;
+    font-size: 4rem;
     line-height: 1;
-    cursor: pointer;
+    color: rgba(0, 0, 0, 0.25);
+    transform: translateY(-50%);
 }
 
-/* Contents */
+._marginRight._shown::after {
+    right: 0.25rem;
+    content: '>';
+}
 
-._toc-button {
-    position: fixed;
-    top: 0.75rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-    padding: 0.35rem 1rem;
-    border: 1px solid #f3d4df;
-    border-radius: 999px;
-    background-color: #ffffff;
+._marginLeft._shown::after {
+    left: 0.25rem;
+    content: '<';
+}
+
+._marginItem {
+    margin-bottom: 0.8rem;
+    padding: 0.8rem 1rem;
+    border-radius: 1rem;
+    background-color: #fce7f3;
+    animation: _appear 220ms ease;
+}
+
+._quote {
+    color: #6b7280;
+    font-style: italic;
+    line-height: 1.8;
+}
+
+._source {
+    display: block;
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    font-style: normal;
     color: #9d174d;
-    font: inherit;
-    font-size: 0.9rem;
-    cursor: pointer;
-    box-shadow: 0 10px 30px -22px rgba(76, 5, 25, 0.7);
 }
 
-._toc {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.15rem;
+._source::before {
+    content: '— ';
 }
 
-._toc-chapter,
-._toc-puzzle,
-._toc-box {
-    padding: 0;
-    border: 0;
-    background: none;
-    color: inherit;
-    font: inherit;
-    text-align: start;
-    cursor: pointer;
-}
-
-._toc-chapter {
-    margin-top: 1rem;
-    font-size: 1.1rem;
+._asideTitle {
+    margin-bottom: 0.35rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    color: #7f1d1d;
+    color: #9d174d;
 }
 
-._toc-chapter:first-child {
-    margin-top: 0;
-}
-
-._toc-puzzle {
-    padding-inline-start: 1.25rem;
+._asideBody {
+    margin-top: 0.5rem;
+    line-height: 1.8;
     color: #4b5563;
 }
 
-._toc-box {
-    padding-inline-start: 2.5rem;
-    font-size: 0.95rem;
-    color: #6b7280;
+._asideSolution {
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed #f9a8d4;
+    color: #831843;
 }
 
-._toc-chapter:hover,
-._toc-puzzle:hover,
-._toc-box:hover {
-    color: #9d174d;
-    text-decoration: underline;
+._asideSolutionButton {
+    opacity: 1;
+    cursor: pointer;
 }
 
-/* A chunk is everything since the last break; only one is on screen at a time. */
-
-[hidden] {
-    display: none !important;
+._asideSolutionText {
+    animation: _appear 220ms ease;
 }
 
-._chapterHead,
-._chunk {
-    display: block;
-}
+/* --- paging --- */
