@@ -97,13 +97,13 @@ appearance. Each superscript number links to its note, shows that note as a tool
 
 ### `margin`
 
-The spaces on the sides of `main`, used to display short texts, being either a `quote` (displaying `text` along with `source`) or `aside` (grouping `asideTitle` and `asideSolution` if they exist). The `asideSolution` is un-expanded behind a button, like a puzzle solution, but the button is always active.
+The spaces on the sides of `main`, used to display short texts, being either a `quote` (displaying `text` along with `source`) or `aside` (grouping `asideTitle` and `asideSolution` if they exist). An `asideSolution` is shown upside down and turns right side up when clicked.
 
 The first margin item of a page is displayed on the right, the second on the left, the third again on the right (below the first) and so on.
 
 ## Paging
 
-Clicking or tapping on the margins of the viewport pages forward or back. A shaded indicator for "next page" appears over the right margin when `main` is scrolled to the bottom (when there is a next page), and a "previous page" indicator over the left margin when it is scrolled to the top.
+Clicking or tapping on the margins of the viewport pages forward or back. What a margin shows keeps its own clicks so selecting a `quote` or pressing an `asideSolution` button does not turn the page. A shaded indicator for "next page" appears over the right margin when `main` is scrolled to the bottom (when there is a next page), and a "previous page" indicator over the left margin when it is scrolled to the top.
 
 Hitting `space` or `right-arrow` scrolls `main` down if possible and pages forward if not. `left-arrow` scrolls back up and turns a page back.
 

@@ -218,23 +218,11 @@ const marginEntries = (items) => {
     return entries;
 };
 
-// An aside solution hides its text behind a button that is always ready to be clicked.
+// An aside solution shows its text upside down and turns right side up when clicked.
 const renderAsideSolution = (item) => {
-    const wrapper = make('div', '_asideSolution');
-    const button = make('button', '_clueButton _asideSolutionButton', CLUE_LABELS.puzzleSolution);
-    const body = make('p', '_asideSolutionText', item.paragraphs.map((paragraph) => paragraph.text).join(' '));
-    button.type = 'button';
-    body.hidden = true;
-    button.addEventListener('click', () => {
-        body.hidden = false;
-        button.animate([{opacity: 1}, {opacity: 0}], {duration: 200, easing: 'ease'})
-            .finished.then(() => {
-                button.hidden = true;
-            })
-            .catch(() => {});
-    });
-    wrapper.append(button, body);
-    return wrapper;
+    const element = make('p', '_asideSolution', item.paragraphs.map((paragraph) => paragraph.text).join(' '));
+    element.addEventListener('click', () => element.classList.add('_turned'), {once: true});
+    return element;
 };
 
 const renderMarginEntry = (entry) => {
@@ -450,8 +438,14 @@ document.addEventListener('click', (event) => {
     }
 });
 
-marginRight.addEventListener('click', goForward);
-marginLeft.addEventListener('click', goBack);
+// Content in a margin keeps its own clicks, so text can be selected and buttons pressed.
+const marginTurn = (turn) => (event) => {
+    if(!event.target.closest('._marginItem')) {
+        turn();
+    }
+};
+marginRight.addEventListener('click', marginTurn(goForward));
+marginLeft.addEventListener('click', marginTurn(goBack));
 
 main.addEventListener('scroll', () => {
     updateChrome();

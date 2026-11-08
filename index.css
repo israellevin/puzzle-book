@@ -385,13 +385,17 @@ h3._paragraph {
         animation: none;
     }
 
-    ._asideSolutionText,
+    ._asideSolution,
     ._clueBody,
     ._footnotes,
     ._marginItem,
     ._dropdown,
     ._errors {
         animation: none;
+    }
+
+    ._asideSolution {
+        transition: none;
     }
 
     ._margin {
@@ -499,6 +503,7 @@ h3._paragraph {
     padding: 0.8rem 1rem;
     border-radius: 1rem;
     background-color: #fce7f3;
+    cursor: auto;
     animation: _appear 220ms ease;
 }
 
@@ -538,15 +543,13 @@ h3._paragraph {
     padding-top: 0.7rem;
     border-top: 1px dashed #f9a8d4;
     color: #831843;
-}
-
-._asideSolutionButton {
-    opacity: 1;
     cursor: pointer;
+    transform: rotate(180deg);
+    transition: transform 400ms ease;
 }
 
-._asideSolutionText {
-    animation: _appear 220ms ease;
+._asideSolution._turned {
+    transform: none;
 }
 
 /* --- paging --- */
