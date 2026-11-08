@@ -75,6 +75,8 @@ The browser's location bar, keeping the page position within the book in the fra
 
 The title and the two selectors sit at one end of the header, the paging buttons and the search box at the other. The `chapterName` item appears here.
 
+On a narrow screen the header stacks instead: the title, the chapter name and the page name each on their own line, with the paging buttons and the search box below them.
+
 ### `main`
 
 The main page, scrollable, used to display long texts. All items not mentioned elsewhere are displayed here.
@@ -107,6 +109,8 @@ On narrow screens each one becomes a button — `ציטוט` for a `quote`, `א�
 ## Paging
 
 Scrolling `main` past its bottom pages forward: a shade appears once the bottom is reached and darkens with the pull, and past a threshold the next page replaces it. Pulling up at the top does the same in reverse. Pulling back lands at the bottom of that page; the paging buttons and the links in the header land at its top.
+
+Scrolling `main` never refreshes the browser; pulling down on the header still does. After a page turns, paging in that same direction is ignored briefly, so one gesture cannot overscroll to another page; scrolling both ways and paging back stay available.
 
 `down-arrow` and `space` scroll `main` down and page forward when it is already at the bottom. `up-arrow` scrolls up and turns a page back when it is at the top.
 

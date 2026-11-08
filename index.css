@@ -42,7 +42,6 @@ h4 {
 html,
 body {
     height: 100%;
-    overflow: hidden;
 }
 
 ._book {
@@ -605,6 +604,25 @@ h3._paragraph {
 
     ._modalBody {
         line-height: 1.8;
+    }
+}
+
+/* --- narrow: the header stacks instead of squeezing --- */
+
+@media (max-width: 30rem) {
+    ._header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.15rem;
+    }
+
+    ._headerStart {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    ._headerEnd {
+        justify-content: flex-end;
     }
 }
 

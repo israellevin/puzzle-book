@@ -44,7 +44,7 @@ const ITEM_TYPE_MAP = Object.fromEntries(Object.entries(ITEM_TYPE_NAMES).map(([k
 // The spreadsheet's own name, taken from the title of its page.
 const readTitle = (page) => {
     const match = page.match(/<title>([^<]*)<\/title>/);
-    return match ? match[1].replace(/\s*-\s*Google Sheets\s*$/, '').trim() : '';
+    return match ? match[1].replace(/\s*-\s*Google (Sheets|Drive)\s*$/, '').trim() : '';
 };
 
 // A csv record per line, except that a quoted cell may hold commas and line breaks.

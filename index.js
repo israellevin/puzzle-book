@@ -28,6 +28,9 @@ const CHIP_LABELS = {
 const PULL_FORWARD = 90;
 const PULL_BACK = 140;
 
+// How long a page ignores paging in the direction it just turned.
+const FREEZE = 400;
+
 const NARROW = '(max-width: 80rem)';
 
 const make = (tagName, className, text) => {
@@ -52,8 +55,8 @@ const state = {
 
 const root = make('div', '_book');
 const header = make('header', '_header');
-const headerStart = make('div', '_headerSide');
-const headerEnd = make('div', '_headerSide');
+const headerStart = make('div', '_headerSide _headerStart');
+const headerEnd = make('div', '_headerSide _headerEnd');
 const bookTitle = make('span', '_bookTitle');
 const chapterButton = make('button', '_selector _chapterSelector');
 const pageButton = make('button', '_selector _pageSelector');
@@ -408,6 +411,20 @@ const atBottom = () => main.scrollHeight - main.clientHeight - main.scrollTop <=
 
 const atTop = () => main.scrollTop <= 2;
 
+let frozenUntil = 0;
+let freezeDirection = 0;
+let touchStart;
+
+const frozen = (forward) => (
+    performance.now() < frozenUntil && freezeDirection === (forward ? 1 : -1)
+);
+
+const freeze = (forward) => {
+    frozenUntil = performance.now() + FREEZE;
+    freezeDirection = forward ? 1 : -1;
+    resetPull();
+};
+
 const writeHash = () => {
     history.replaceState(null, '', state.book.hash());
 };
@@ -449,12 +466,14 @@ const showPage = (edge='start') => {
 const goForward = () => {
     if(state.book.next()) {
         showPage('start');
+        freeze(true);
     }
 };
 
 const goBack = (edge='start') => {
     if(state.book.previous()) {
         showPage(edge);
+        freeze(false);
     }
 };
 
@@ -483,8 +502,6 @@ const applyPull = (amount, forward) => {
         }
     }
 };
-
-let touchStart;
 
 // --- wiring ---------------------------------------------------------------
 
@@ -547,12 +564,18 @@ main.addEventListener('scroll', () => {
 });
 
 main.addEventListener('wheel', (event) => {
-    if(event.deltaY > 0 && atBottom() && hasNext()) {
+    const forward = event.deltaY > 0;
+    const backward = event.deltaY < 0;
+    if(forward && atBottom() && hasNext()) {
         event.preventDefault();
-        applyPull(pull + event.deltaY, true);
-    } else if(event.deltaY < 0 && atTop() && hasPrevious()) {
+        if(!frozen(true)) {
+            applyPull(pull + event.deltaY, true);
+        }
+    } else if(backward && atTop() && hasPrevious()) {
         event.preventDefault();
-        applyPull(pull - event.deltaY, false);
+        if(!frozen(false)) {
+            applyPull(pull - event.deltaY, false);
+        }
     } else if(pull) {
         resetPull();
     }
@@ -569,10 +592,18 @@ main.addEventListener('touchmove', (event) => {
     const distance = touchStart - event.touches[0].clientY;
     if(distance > 0 && atBottom() && hasNext()) {
         event.preventDefault();
-        applyPull(distance, true);
+        if(frozen(true)) {
+            touchStart = event.touches[0].clientY;
+        } else {
+            applyPull(distance, true);
+        }
     } else if(distance < 0 && atTop() && hasPrevious()) {
         event.preventDefault();
-        applyPull(-distance, false);
+        if(frozen(false)) {
+            touchStart = event.touches[0].clientY;
+        } else {
+            applyPull(-distance, false);
+        }
     }
 }, {passive: false});
 
