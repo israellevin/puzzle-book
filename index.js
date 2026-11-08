@@ -267,6 +267,20 @@ const openNote = (body) => {
     modal.showModal();
 };
 
+// Let the slip slide away before the dialog actually closes.
+const closeNote = () => {
+    if(!modal.open || modal.classList.contains('_closing')) {
+        return;
+    }
+    modal.classList.add('_closing');
+    window.setTimeout(() => {
+        if(modal.open) {
+            modal.classList.remove('_closing');
+            modal.close();
+        }
+    }, 220);
+};
+
 const renderNotes = () => {
     const entries = marginEntries(page().margins);
     entries.forEach((entry, index) => {
@@ -512,8 +526,12 @@ forwardButton.addEventListener('click', () => goForward());
 
 modal.addEventListener('click', (event) => {
     if(event.target === modal) {
-        modal.close();
+        closeNote();
     }
+});
+modal.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    closeNote();
 });
 modal.addEventListener('close', () => {
     if(state.openBody && state.openParent) {
