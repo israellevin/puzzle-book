@@ -39,138 +39,12 @@ h4 {
     display: none !important;
 }
 
-/* --- arrangements ---
-   `_layout-sides` flanks main with the margins, `_layout-below` stacks them under it,
-   `_layout-overlay` floats them over the page beside a padded main. */
-
 ._book {
+    display: flex;
+    flex-direction: column;
     height: 100vh;
     height: 100dvh;
     background-color: #fdf2f2;
-}
-
-._layout-sides {
-    display: grid;
-    grid-template-columns: 16rem minmax(0, 1fr) 16rem;
-    grid-template-rows: auto minmax(0, 1fr);
-    gap: 1rem;
-    padding: 1rem;
-}
-
-._layout-sides ._header {
-    grid-column: 1 / -1;
-}
-
-._layout-sides ._main {
-    grid-column: 2;
-    grid-row: 2;
-    overflow: auto;
-}
-
-._layout-sides ._marginRight {
-    grid-column: 1;
-    grid-row: 2;
-    overflow: auto;
-}
-
-._layout-sides ._marginLeft {
-    grid-column: 3;
-    grid-row: 2;
-    overflow: auto;
-}
-
-._layout-below {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto minmax(0, 1fr) auto;
-    gap: 0.75rem;
-    padding: 0.75rem;
-}
-
-._layout-below ._header,
-._layout-below ._main {
-    grid-column: 1 / -1;
-}
-
-._layout-below ._main {
-    grid-row: 2;
-    overflow: auto;
-}
-
-._layout-below ._marginRight {
-    grid-column: 1;
-    grid-row: 3;
-    max-height: 30vh;
-    overflow: auto;
-}
-
-._layout-below ._marginLeft {
-    grid-column: 2;
-    grid-row: 3;
-    max-height: 30vh;
-    overflow: auto;
-}
-
-._layout-overlay {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
-    padding: 0 17rem;
-}
-
-._layout-overlay ._main {
-    grid-row: 2;
-    overflow: auto;
-}
-
-._layout-overlay ._margin {
-    position: fixed;
-    top: 5.5rem;
-    width: 15rem;
-    max-height: calc(100vh - 7rem);
-    overflow: auto;
-}
-
-._layout-overlay ._marginRight {
-    right: 0.75rem;
-}
-
-._layout-overlay ._marginLeft {
-    left: 0.75rem;
-}
-
-@media (max-width: 80rem) {
-    ._layout-sides {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto minmax(0, 1fr) auto;
-    }
-
-    ._layout-sides ._main {
-        grid-column: 1 / -1;
-        grid-row: 2;
-    }
-
-    ._layout-sides ._marginRight {
-        grid-column: 1;
-        grid-row: 3;
-        max-height: 30vh;
-    }
-
-    ._layout-sides ._marginLeft {
-        grid-column: 2;
-        grid-row: 3;
-        max-height: 30vh;
-    }
-
-    ._layout-overlay {
-        padding: 0;
-    }
-
-    ._layout-overlay ._margin {
-        position: static;
-        width: auto;
-        max-height: 25vh;
-        margin: 0 0.75rem;
-    }
 }
 
 /* --- header --- */
@@ -178,11 +52,16 @@ h4 {
 ._header {
     position: relative;
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.25rem 0.5rem;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.4rem 0.75rem;
+}
+
+._headerSide {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 ._bookTitle {
@@ -207,8 +86,24 @@ h4 {
     background-color: #fce7f3;
 }
 
+._pager {
+    padding: 0.1rem 0.55rem;
+    border: 1px solid #f3d4df;
+    border-radius: 0.6rem;
+    background-color: #fff7fa;
+    color: #9d174d;
+    font: inherit;
+    font-size: 1.25rem;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+._pager:hover,
+._pager:focus-visible {
+    background-color: #fce7f3;
+}
+
 ._search {
-    margin-inline-start: 0;
     padding: 0.25rem 0.7rem;
     border: 1px solid #f3d4df;
     border-radius: 999px;
@@ -220,7 +115,7 @@ h4 {
 ._dropdown {
     position: absolute;
     top: 100%;
-    inset-inline-start: 0.5rem;
+    inset-inline-start: 0.75rem;
     z-index: 5;
     display: flex;
     flex-direction: column;
@@ -236,14 +131,10 @@ h4 {
 
 ._dropdownItem {
     padding: 0.35rem 0.6rem;
-    border: 0;
     border-radius: 0.5rem;
-    background: none;
     color: #4b5563;
-    font: inherit;
     font-size: 0.95rem;
-    text-align: start;
-    cursor: pointer;
+    text-decoration: none;
 }
 
 ._dropdownItem:hover,
@@ -252,10 +143,25 @@ h4 {
     color: #9d174d;
 }
 
-/* --- main --- */
+/* --- reading pane --- */
+
+._stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+}
 
 ._main {
-    padding: 0.5rem 1.5rem 4rem;
+    height: 100%;
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+._page {
+    position: relative;
+    max-width: 70rem;
+    margin: 0 auto;
+    padding: 0.5rem 17rem 4rem;
 }
 
 ._paragraph {
@@ -345,10 +251,6 @@ h3._paragraph {
     background-color: #fce7f3;
 }
 
-._clueLabel {
-    font-size: 0.95rem;
-}
-
 ._clueBody {
     margin-top: 0.75rem;
     padding: 0.9rem 1.1rem;
@@ -377,29 +279,6 @@ h3._paragraph {
     to {
         opacity: 1;
         transform: none;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    ._clueButton._active {
-        animation: none;
-    }
-
-    ._asideSolution,
-    ._clueBody,
-    ._footnotes,
-    ._marginItem,
-    ._dropdown,
-    ._errors {
-        animation: none;
-    }
-
-    ._asideSolution {
-        transition: none;
-    }
-
-    ._margin {
-        transition: none;
     }
 }
 
@@ -464,46 +343,13 @@ h3._paragraph {
     margin-bottom: 0.35rem;
 }
 
-/* --- margins --- */
+/* --- sidenotes --- */
 
-._margin {
-    position: relative;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: background-color 200ms ease;
-}
-
-._margin._shown {
-    background-color: rgba(0, 0, 0, 0.05);
-}
-
-._margin::after {
-    position: absolute;
-    top: 50%;
-    content: '';
-    direction: ltr;
-    font-size: 4rem;
-    line-height: 1;
-    color: rgba(0, 0, 0, 0.25);
-    transform: translateY(-50%);
-}
-
-._marginRight._shown::after {
-    right: 0.25rem;
-    content: '>';
-}
-
-._marginLeft._shown::after {
-    left: 0.25rem;
-    content: '<';
-}
-
-._marginItem {
-    margin-bottom: 0.8rem;
+._note {
     padding: 0.8rem 1rem;
     border-radius: 1rem;
     background-color: #fce7f3;
-    cursor: auto;
+    font-size: 0.95rem;
     animation: _appear 220ms ease;
 }
 
@@ -552,4 +398,115 @@ h3._paragraph {
     transform: none;
 }
 
-/* --- paging --- */
+._chip {
+    display: none;
+}
+
+._modal {
+    max-width: min(36rem, 90vw);
+    max-height: 80vh;
+    padding: 1.5rem;
+    overflow: auto;
+    border: 0;
+    border-radius: 1rem;
+    background-color: #fff7fa;
+    color: #1f2937;
+    font-size: 1rem;
+}
+
+._modal::backdrop {
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+/* --- paging shades --- */
+
+._shade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 7rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+}
+
+._shadeForward {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0));
+}
+
+._shadeBack {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0));
+}
+
+/* --- wide: sidenotes beside the text --- */
+
+@media (min-width: 80.01rem) {
+    ._note {
+        position: absolute;
+        top: 0;
+        width: 15rem;
+    }
+
+    ._noteRight {
+        right: 1rem;
+    }
+
+    ._noteLeft {
+        left: 1rem;
+    }
+}
+
+/* --- narrow: chips and a modal --- */
+
+@media (max-width: 80rem) {
+    ._page {
+        padding: 0.5rem 1rem 3rem;
+    }
+
+    ._note {
+        display: block;
+        margin: 0.6rem 0;
+        padding: 0;
+        background: none;
+    }
+
+    ._note > ._noteBody {
+        display: none;
+    }
+
+    ._chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.3rem 0.85rem;
+        border: 1px solid #f0b8cd;
+        border-radius: 999px;
+        background-color: #fce7f3;
+        color: #9d174d;
+        font: inherit;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    ._modalBody {
+        line-height: 1.8;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ._clueButton._active {
+        animation: none;
+    }
+
+    ._asideSolution,
+    ._clueBody,
+    ._footnotes,
+    ._note,
+    ._dropdown,
+    ._errors,
+    ._shade {
+        animation: none;
+        transition: none;
+    }
+}

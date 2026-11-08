@@ -70,9 +70,10 @@ The browser's location bar, keeping the page position within the book in the fra
 - Book's title, extracted from the name of the spreadsheet
 - Name of the current chapter, expanding on click to a list of links to all chapters
 - Name of the current puzzle, box, or "intro", expanding on click to a list of links to all pages in the current chapter
+- Buttons to page forward and back
 - Search box for searching within the book (not implemented yet)
 
-The `chapterName` item appears here.
+The title and the two selectors sit at one end of the header, the paging buttons and the search box at the other. The `chapterName` item appears here.
 
 ### `main`
 
@@ -99,12 +100,14 @@ appearance. Each superscript number links to its note, shows that note as a tool
 
 The spaces on the sides of `main`, used to display short texts, being either a `quote` (displaying `text` along with `source`) or `aside` (grouping `asideTitle` and `asideSolution` if they exist). An `asideSolution` is shown upside down and turns right side up when clicked.
 
-The first margin item of a page is displayed on the right, the second on the left, the third again on the right (below the first) and so on.
+The first margin item of a page is displayed on the right, the second on the left, the third again on the right (below the first) and so on. Each one sits at the height of the text around it, pushed below the previous one on its side when they would collide.
+
+On narrow screens each one becomes a button — `ציטוט` for a `quote`, `אגב-אורחא` for an `aside`, `חידונת` when the aside has an `asideSolution` — that opens the item in a modal window centred on the screen. Clicking outside it or pressing escape closes it, and the button stays.
 
 ## Paging
 
-Clicking or tapping on the margins of the viewport pages forward or back. What a margin shows keeps its own clicks so selecting a `quote` or pressing an `asideSolution` button does not turn the page. A shaded indicator for "next page" appears over the right margin when `main` is scrolled to the bottom (when there is a next page), and a "previous page" indicator over the left margin when it is scrolled to the top.
+Scrolling `main` past its bottom pages forward: a shade appears once the bottom is reached and darkens with the pull, and past a threshold the next page replaces it. Pulling up at the top does the same in reverse. Pulling back lands at the bottom of that page; the paging buttons and the links in the header land at its top.
 
-Hitting `space` or `right-arrow` scrolls `main` down if possible and pages forward if not. `left-arrow` scrolls back up and turns a page back.
+`down-arrow` and `space` scroll `main` down and page forward when it is already at the bottom. `up-arrow` scrolls up and turns a page back when it is at the top.
 
-A new page starts scrolled to the top when paging forward, and scrolled to the bottom when paging back.
+Paging forward starts a page scrolled to the top.

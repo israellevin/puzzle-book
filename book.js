@@ -23,7 +23,7 @@ export const build = (items) => {
 
     for(const item of items) {
         if(isSide(item)) {
-            page && page.margins.push(item);
+            page && page.margins.push({item, anchor: page.items.length});
             continue;
         }
         const continues = page

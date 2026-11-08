@@ -2,9 +2,6 @@
 import * as book from './book.js';
 import * as sheet from './sheet.js';
 
-// The margin arrangement, see index.css: '_layout-sides', '_layout-below' or '_layout-overlay'.
-const LAYOUT = '_layout-sides';
-
 const CLUE_LABELS = {
     teaSpoon: 'כפית',
     tableSpoon: 'כף',
@@ -21,6 +18,18 @@ const HEADING_TAGS = {
     chapterSubtitle: 'h2'
 };
 
+const CHIP_LABELS = {
+    quote: 'ציטוט',
+    aside: 'אגב-אורחא',
+    solution: 'חידונת'
+};
+
+// How far past the end of the text a pull has to travel before the page turns.
+const PULL_FORWARD = 90;
+const PULL_BACK = 140;
+
+const NARROW = '(max-width: 80rem)';
+
 const make = (tagName, className, text) => {
     const element = document.createElement(tagName);
     if(className) {
@@ -32,28 +41,34 @@ const make = (tagName, className, text) => {
     return element;
 };
 
-const LAYOUTS = ['_layout-sides', '_layout-below', '_layout-overlay'];
-
 const state = {
     title: '',
     pages: [],
     book: undefined,
-    expanded: new Set()
+    expanded: new Set(),
+    itemElement: new Map(),
+    notes: []
 };
 
-const root = make('div', `_book ${LAYOUT}`);
+const root = make('div', '_book');
 const header = make('header', '_header');
+const headerStart = make('div', '_headerSide');
+const headerEnd = make('div', '_headerSide');
 const bookTitle = make('span', '_bookTitle');
 const chapterButton = make('button', '_selector _chapterSelector');
 const pageButton = make('button', '_selector _pageSelector');
+const backButton = make('button', '_pager _pagerBack', '‹');
+const forwardButton = make('button', '_pager _pagerForward', '›');
 const search = make('input', '_search');
-// Temporary: cycles the margin arrangement so all three can be tried in the browser.
-const layoutButton = make('button', '_selector _layoutSelector');
 const chapterList = make('div', '_dropdown');
 const pageList = make('div', '_dropdown');
+const stage = make('div', '_stage');
 const main = make('div', '_main');
-const marginRight = make('aside', '_margin _marginRight');
-const marginLeft = make('aside', '_margin _marginLeft');
+const pageBody = make('div', '_page');
+const shadeBack = make('div', '_shade _shadeBack');
+const shadeForward = make('div', '_shade _shadeForward');
+const modal = make('dialog', '_modal');
+const modalBody = make('div', '_modalBody');
 
 const page = () => state.book.current();
 
@@ -68,7 +83,7 @@ const pageLabel = (current) => {
     return current.title ? current.title.paragraphs[0].text : '';
 };
 
-// --- feet, clues and footnotes -------------------------------------------
+// --- text, clues and footnotes -------------------------------------------
 
 const footnoteMark = (paragraph) => {
     const number = footnoteNumber(paragraph);
@@ -95,6 +110,16 @@ const isCollapsed = (item) => Boolean(CLUE_LABELS[item.type]) && !state.expanded
 
 const footnoteNumber = (paragraph) => page().footnotes.findIndex((entry) => entry.paragraph === paragraph) + 1;
 
+const renderParagraph = (paragraph, tagName='p') => {
+    const element = make(tagName, '_paragraph');
+    if(paragraph.footnote) {
+        fillText(element, paragraph.text, footnoteMark(paragraph));
+    } else {
+        element.textContent = paragraph.text;
+    }
+    return element;
+};
+
 const renderFile = (file) => {
     const figure = make('figure', '_illustration');
     if(file) {
@@ -109,16 +134,9 @@ const renderFile = (file) => {
 };
 
 const renderItem = (item) => {
-    const paragraphs = item.paragraphs.map((paragraph, index) => {
-        const tagName = index === 0 && HEADING_TAGS[item.type] ? HEADING_TAGS[item.type] : 'p';
-        const element = make(tagName, '_paragraph');
-        if(paragraph.footnote) {
-            fillText(element, paragraph.text, footnoteMark(paragraph));
-        } else {
-            element.textContent = paragraph.text;
-        }
-        return element;
-    });
+    const paragraphs = item.paragraphs.map((paragraph, index) => (
+        renderParagraph(paragraph, index === 0 && HEADING_TAGS[item.type] ? HEADING_TAGS[item.type] : 'p')
+    ));
     if(item.type === 'illustration') {
         return [...(item.files.length ? item.files : [undefined]).map(renderFile), ...paragraphs];
     }
@@ -151,13 +169,7 @@ const renderClue = (item) => {
     const body = make('div', '_clueBody');
     body.hidden = true;
     for(const paragraph of item.paragraphs) {
-        const element = make('p', '_paragraph');
-        if(paragraph.footnote) {
-            fillText(element, paragraph.text, footnoteMark(paragraph));
-        } else {
-            element.textContent = paragraph.text;
-        }
-        body.append(element);
+        body.append(renderParagraph(paragraph));
     }
     button.addEventListener('click', () => expand(entry, item));
     entry.append(button, body);
@@ -166,7 +178,7 @@ const renderClue = (item) => {
 
 const renderFootnotes = () => {
     const current = page();
-    main.querySelector('._footnotes')?.remove();
+    pageBody.querySelector('._footnotes')?.remove();
     if(!current.footnotes.length) {
         return;
     }
@@ -176,8 +188,7 @@ const renderFootnotes = () => {
         const number = index + 1;
         entry.id = `fn-${number}`;
         entry.append(make('span', '_footnoteNumber', `${number}. `));
-        const text = make('span', '_footnoteText', footnote);
-        entry.append(text);
+        entry.append(make('span', '_footnoteText', footnote));
         if(isCollapsed(item)) {
             entry.classList.add('_redacted');
         } else {
@@ -187,18 +198,18 @@ const renderFootnotes = () => {
         }
         list.append(entry);
     });
-    main.append(list);
+    pageBody.append(list);
 };
 
-// --- margins --------------------------------------------------------------
+// --- margins as sidenotes -------------------------------------------------
 
-const marginEntries = (items) => {
+const marginEntries = (margins) => {
     const entries = [];
-    for(const item of items) {
+    for(const {item, anchor} of margins) {
         const last = entries[entries.length - 1];
         if(item.type === 'quote') {
-            entries.push({kind: 'quote', quote: item});
-        } else if(last && last.kind === 'aside') {
+            entries.push({kind: 'quote', quote: item, anchor});
+        } else if(last && last.kind === 'aside' && last.anchor === anchor) {
             if(item.type === 'asideTitle') {
                 last.title = item;
             } else if(item.type === 'asideSolution') {
@@ -209,6 +220,7 @@ const marginEntries = (items) => {
         } else {
             entries.push({
                 kind: 'aside',
+                anchor,
                 title: item.type === 'asideTitle' ? item : undefined,
                 bodies: item.type === 'aside' ? [item] : [],
                 solution: item.type === 'asideSolution' ? item : undefined
@@ -225,39 +237,81 @@ const renderAsideSolution = (item) => {
     return element;
 };
 
-const renderMarginEntry = (entry) => {
-    const element = make('div', `_marginItem _margin-${entry.kind}`);
+const renderNoteBody = (entry) => {
+    const body = make('div', '_noteBody');
     if(entry.kind === 'quote') {
-        const text = make('blockquote', '_quote');
-        text.textContent = entry.quote.paragraphs.map((paragraph) => paragraph.text).join(' ');
-        element.append(text);
+        body.append(make('blockquote', '_quote', entry.quote.paragraphs.map((paragraph) => paragraph.text).join(' ')));
         if(entry.quote.source) {
-            element.append(make('cite', '_source', entry.quote.source));
+            body.append(make('cite', '_source', entry.quote.source));
         }
-        return element;
+        return body;
     }
     if(entry.title) {
-        element.append(make('h3', '_asideTitle', entry.title.paragraphs[0].text));
+        body.append(make('h3', '_asideTitle', entry.title.paragraphs[0].text));
     }
-    for(const body of entry.bodies) {
-        for(const paragraph of body.paragraphs) {
-            element.append(make('p', '_asideBody', paragraph.text));
+    for(const item of entry.bodies) {
+        for(const paragraph of item.paragraphs) {
+            body.append(make('p', '_asideBody', paragraph.text));
         }
     }
     if(entry.solution) {
-        element.append(renderAsideSolution(entry.solution));
+        body.append(renderAsideSolution(entry.solution));
     }
-    return element;
+    return body;
 };
 
-const renderMargins = () => {
-    marginRight.replaceChildren();
-    marginLeft.replaceChildren();
+const openNote = (body) => {
+    state.openBody = body;
+    state.openParent = body.parentElement;
+    modalBody.append(body);
+    modal.showModal();
+};
+
+const renderNotes = () => {
     const entries = marginEntries(page().margins);
     entries.forEach((entry, index) => {
-        const side = index % 2 === 0 ? marginRight : marginLeft;
-        side.append(renderMarginEntry(entry));
+        const side = index % 2 === 0 ? 'Right' : 'Left';
+        const element = make('aside', `_note _note-${entry.kind} _note${side}`);
+        const body = renderNoteBody(entry);
+        const chip = make('button', '_chip', entry.solution ? CHIP_LABELS.solution : CHIP_LABELS[entry.kind]);
+        chip.type = 'button';
+        chip.addEventListener('click', () => openNote(body));
+        element.append(chip, body);
+        const anchor = anchorElement(entry.anchor);
+        if(anchor) {
+            anchor.after(element);
+        } else {
+            pageBody.append(element);
+        }
+        state.notes.push({element, anchor: entry.anchor, side});
     });
+};
+
+const anchorElement = (anchorIndex) => {
+    const items = page().items;
+    for(let index = anchorIndex; index < items.length; index++) {
+        const element = state.itemElement.get(items[index]);
+        if(element) {
+            return element;
+        }
+    }
+    const rendered = [...state.itemElement.values()];
+    return rendered[rendered.length - 1];
+};
+
+const layoutNotes = () => {
+    if(window.matchMedia(NARROW).matches) {
+        return;
+    }
+    const bottoms = new Map();
+    for(const note of state.notes) {
+        const anchor = anchorElement(note.anchor);
+        const top = anchor ? anchor.offsetTop : 0;
+        const previous = bottoms.get(note.side);
+        const y = previous === undefined ? top : Math.max(top, previous + 16);
+        note.element.style.top = `${y}px`;
+        bottoms.set(note.side, y + note.element.offsetHeight);
+    }
 };
 
 // --- main -----------------------------------------------------------------
@@ -273,15 +327,20 @@ const renderErrors = (errors) => {
 
 const renderMain = () => {
     const current = page();
-    main.replaceChildren();
+    pageBody.replaceChildren();
+    state.itemElement = new Map();
+    state.notes = [];
+
     if(current.errors.length) {
-        main.append(renderErrors(current.errors));
+        pageBody.append(renderErrors(current.errors));
     }
     for(const item of current.items) {
         if(item.type === 'chapterName' || CLUE_LABELS[item.type]) {
             continue;
         }
-        main.append(...renderItem(item));
+        const elements = renderItem(item);
+        state.itemElement.set(item, elements[0]);
+        pageBody.append(...elements);
     }
     const clues = current.items.filter((item) => CLUE_LABELS[item.type]);
     if(clues.length) {
@@ -289,9 +348,11 @@ const renderMain = () => {
         for(const item of clues) {
             wrapper.append(renderClue(item));
         }
-        main.append(wrapper);
+        pageBody.append(wrapper);
     }
+    renderNotes();
     renderFootnotes();
+    layoutNotes();
 };
 
 // --- header ---------------------------------------------------------------
@@ -301,19 +362,15 @@ const closeLists = () => {
     pageList.hidden = true;
 };
 
-const openList = (list, items, selected, pick) => {
+const openList = (list, items, selected) => {
     list.replaceChildren();
     for(const item of items) {
-        const link = make('button', '_dropdownItem');
-        link.type = 'button';
-        link.textContent = item.label;
+        const link = make('a', '_dropdownItem', item.label);
+        link.href = `#${item.page + 1}@1`;
         if(item.page === selected) {
             link.classList.add('_selected');
         }
-        link.addEventListener('click', () => {
-            closeLists();
-            pick(item.page);
-        });
+        link.addEventListener('click', closeLists);
         list.append(link);
     }
     closeLists();
@@ -329,16 +386,48 @@ const renderHeader = () => {
 
 // --- paging ---------------------------------------------------------------
 
-const scrollPosition = (edge) => {
-    main.scrollTop = edge === 'end' ? main.scrollHeight : 0;
+const hasNext = () => state.book.page + 1 < state.pages.length;
+
+const hasPrevious = () => state.book.page > 0;
+
+const atBottom = () => main.scrollHeight - main.clientHeight - main.scrollTop <= 2;
+
+const atTop = () => main.scrollTop <= 2;
+
+const writeHash = () => {
+    history.replaceState(null, '', state.book.hash());
+};
+
+const updateItemIndex = () => {
+    let top = 0;
+    [...state.itemElement.values()].forEach((element, index) => {
+        if(element.offsetTop <= main.scrollTop + 8) {
+            top = index;
+        }
+    });
+    state.book.item = top;
+};
+
+const activateNextClue = () => {
+    const button = main.querySelector('._clue:not(._expanded) ._clueButton');
+    if(button && button.disabled) {
+        button.disabled = false;
+        button.classList.add('_active');
+    }
+};
+
+const updateChrome = () => {
+    if(atBottom()) {
+        activateNextClue();
+    }
+    updateItemIndex();
 };
 
 const showPage = (edge='start') => {
     state.expanded = new Set();
     renderHeader();
     renderMain();
-    renderMargins();
-    scrollPosition(edge);
+    main.scrollTop = edge === 'end' ? main.scrollHeight : 0;
     updateChrome();
     writeHash();
 };
@@ -349,88 +438,68 @@ const goForward = () => {
     }
 };
 
-const goBack = () => {
+const goBack = (edge='start') => {
     if(state.book.previous()) {
-        showPage('end');
+        showPage(edge);
     }
 };
 
-const goToPage = (index) => {
-    state.book.page = index;
-    state.book.item = 0;
-    showPage('start');
+let pull = 0;
+let pullTimer;
+
+const resetPull = () => {
+    pull = 0;
+    shadeForward.style.opacity = '0';
+    shadeBack.style.opacity = '0';
 };
 
-const hasNext = () => state.book.page + 1 < state.pages.length;
-
-const hasPrevious = () => state.book.page > 0;
-
-const atBottom = () => main.scrollHeight - main.clientHeight - main.scrollTop <= 2;
-
-const atTop = () => main.scrollTop <= 2;
-
-const activateNextClue = () => {
-    const button = main.querySelector('._clue:not(._expanded) ._clueButton');
-    if(button && button.disabled) {
-        button.disabled = false;
-        button.classList.add('_active');
-    }
-};
-
-const updateItemIndex = () => {
-    const items = [...main.children].filter((element) => element.dataset.item !== undefined);
-    let top = 0;
-    items.forEach((element, index) => {
-        if(element.offsetTop <= main.scrollTop + 8) {
-            top = index;
+const applyPull = (amount, forward) => {
+    const limit = forward ? PULL_FORWARD : PULL_BACK;
+    const shade = forward ? shadeForward : shadeBack;
+    pull = Math.max(0, amount);
+    shade.style.opacity = String(Math.min(1, pull / limit));
+    window.clearTimeout(pullTimer);
+    pullTimer = window.setTimeout(resetPull, 260);
+    if(pull >= limit) {
+        resetPull();
+        if(forward) {
+            goForward();
+        } else {
+            goBack('end');
         }
-    });
-    state.book.item = top;
-};
-
-const writeHash = () => {
-    history.replaceState(null, '', state.book.hash());
-};
-
-const updateChrome = () => {
-    marginRight.classList.toggle('_shown', atBottom() && hasNext());
-    marginLeft.classList.toggle('_shown', atTop() && hasPrevious());
-    if(atBottom()) {
-        activateNextClue();
     }
-    updateItemIndex();
 };
+
+let touchStart;
 
 // --- wiring ---------------------------------------------------------------
 
-root.append(header, main, marginLeft, marginRight);
-header.append(bookTitle, chapterButton, pageButton, search, layoutButton, chapterList, pageList);
+root.append(header, stage, modal);
+header.append(headerStart, headerEnd, chapterList, pageList);
+headerStart.append(bookTitle, chapterButton, pageButton);
+headerEnd.append(backButton, forwardButton, search);
+stage.append(main, shadeBack, shadeForward);
+main.append(pageBody);
+modal.append(modalBody);
+
+chapterButton.type = 'button';
+pageButton.type = 'button';
+backButton.type = 'button';
+forwardButton.type = 'button';
 search.type = 'search';
 search.placeholder = 'חיפש (לא פעיל)';
 search.disabled = true;
 
-let layout = LAYOUT;
-layoutButton.type = 'button';
-layoutButton.textContent = layout.replace('_layout-', '');
-layoutButton.addEventListener('click', () => {
-    layout = LAYOUTS[(LAYOUTS.indexOf(layout) + 1) % LAYOUTS.length];
-    root.className = `_book ${layout}`;
-    layoutButton.textContent = layout.replace('_layout-', '');
-    updateChrome();
-});
-
-chapterButton.type = 'button';
-pageButton.type = 'button';
 chapterButton.addEventListener('click', () => {
     openList(chapterList, state.pages
         .map((candidate, index) => ({label: chapterOf(candidate), page: index}))
-        .filter((entry) => state.pages[entry.page].kind === 'chapter'), state.book.page, goToPage);
+        .filter((entry) => state.pages[entry.page].kind === 'chapter'), state.book.page);
 });
 pageButton.addEventListener('click', () => {
     const chapter = page().chapter;
     openList(pageList, state.pages
         .map((candidate, index) => ({label: pageLabel(candidate), page: index}))
-        .filter((entry) => state.pages[entry.page].chapter === chapter), state.book.page, goToPage);
+        .filter((entry) => state.pages[entry.page].chapter === chapter), state.book.page);
 });
 document.addEventListener('click', (event) => {
     if(!header.contains(event.target)) {
@@ -438,32 +507,69 @@ document.addEventListener('click', (event) => {
     }
 });
 
-// Content in a margin keeps its own clicks, so text can be selected and buttons pressed.
-const marginTurn = (turn) => (event) => {
-    if(!event.target.closest('._marginItem')) {
-        turn();
+backButton.addEventListener('click', () => goBack('start'));
+forwardButton.addEventListener('click', () => goForward());
+
+modal.addEventListener('click', (event) => {
+    if(event.target === modal) {
+        modal.close();
     }
-};
-marginRight.addEventListener('click', marginTurn(goForward));
-marginLeft.addEventListener('click', marginTurn(goBack));
+});
+modal.addEventListener('close', () => {
+    if(state.openBody && state.openParent) {
+        state.openParent.append(state.openBody);
+    }
+    state.openBody = undefined;
+    state.openParent = undefined;
+});
 
 main.addEventListener('scroll', () => {
     updateChrome();
     writeHash();
 });
 
+main.addEventListener('wheel', (event) => {
+    if(event.deltaY > 0 && atBottom() && hasNext()) {
+        event.preventDefault();
+        applyPull(pull + event.deltaY, true);
+    } else if(event.deltaY < 0 && atTop() && hasPrevious()) {
+        event.preventDefault();
+        applyPull(pull - event.deltaY, false);
+    } else if(pull) {
+        resetPull();
+    }
+}, {passive: false});
+
+main.addEventListener('touchstart', (event) => {
+    touchStart = event.touches[0].clientY;
+}, {passive: true});
+
+main.addEventListener('touchmove', (event) => {
+    if(touchStart === undefined) {
+        return;
+    }
+    const distance = touchStart - event.touches[0].clientY;
+    if(distance > 0 && atBottom() && hasNext()) {
+        event.preventDefault();
+        applyPull(distance, true);
+    } else if(distance < 0 && atTop() && hasPrevious()) {
+        event.preventDefault();
+        applyPull(-distance, false);
+    }
+}, {passive: false});
+
 document.addEventListener('keydown', (event) => {
-    if(event.key === 'ArrowRight' || event.key === ' ' || event.key === 'Space' || event.key === 'Enter') {
+    if(event.key === 'ArrowDown' || event.key === ' ' || event.key === 'Space') {
         event.preventDefault();
         if(atBottom()) {
             goForward();
         } else {
             main.scrollTop += main.clientHeight * 0.9;
         }
-    } else if(event.key === 'ArrowLeft') {
+    } else if(event.key === 'ArrowUp') {
         event.preventDefault();
         if(atTop()) {
-            goBack();
+            goBack('end');
         } else {
             main.scrollTop -= main.clientHeight * 0.9;
         }
@@ -471,6 +577,15 @@ document.addEventListener('keydown', (event) => {
         closeLists();
     }
 });
+
+window.addEventListener('hashchange', () => {
+    if(/^#\d+@\d+$/.test(location.hash)) {
+        state.book.moveTo(location.hash);
+        showPage('start');
+    }
+});
+
+window.addEventListener('resize', layoutNotes);
 
 document.body.append(root);
 
@@ -483,5 +598,6 @@ sheet.get().then(({title, items, errors}) => {
     showPage('start');
 }).catch((error) => {
     console.error(error);
-    main.replaceChildren(make('div', '_errors', `טעינת הספר נכשלה: ${error.message}`));
+    pageBody.replaceChildren(make('div', '_errors', `טעינת הספר נכשלה: ${error.message}`));
+    main.append(pageBody);
 });
