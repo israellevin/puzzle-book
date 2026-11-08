@@ -28,8 +28,8 @@ const CHIP_LABELS = {
 const PULL_FORWARD = 90;
 const PULL_BACK = 140;
 
-// How long a page ignores paging in the direction it just turned.
-const FREEZE = 400;
+// A pause this long between wheel events counts as the start of a new drag.
+const WHEEL_IDLE = 150;
 
 const NARROW = '(max-width: 80rem)';
 
@@ -411,19 +411,9 @@ const atBottom = () => main.scrollHeight - main.clientHeight - main.scrollTop <=
 
 const atTop = () => main.scrollTop <= 2;
 
-let frozenUntil = 0;
-let freezeDirection = 0;
-let touchStart;
-
-const frozen = (forward) => (
-    performance.now() < frozenUntil && freezeDirection === (forward ? 1 : -1)
-);
-
-const freeze = (forward) => {
-    frozenUntil = performance.now() + FREEZE;
-    freezeDirection = forward ? 1 : -1;
-    resetPull();
-};
+let forwardLocked = false;
+let lastWheel = 0;
+let touchY;
 
 const writeHash = () => {
     history.replaceState(null, '', state.book.hash());
@@ -466,15 +456,17 @@ const showPage = (edge='start') => {
 const goForward = () => {
     if(state.book.next()) {
         showPage('start');
-        freeze(true);
+        return true;
     }
+    return false;
 };
 
 const goBack = (edge='start') => {
     if(state.book.previous()) {
         showPage(edge);
-        freeze(false);
+        return true;
     }
+    return false;
 };
 
 let pull = 0;
@@ -496,11 +488,11 @@ const applyPull = (amount, forward) => {
     if(pull >= limit) {
         resetPull();
         if(forward) {
-            goForward();
-        } else {
-            goBack('end');
+            return goForward();
         }
+        return goBack('end');
     }
+    return false;
 };
 
 // --- wiring ---------------------------------------------------------------
@@ -566,43 +558,54 @@ main.addEventListener('scroll', () => {
 main.addEventListener('wheel', (event) => {
     const forward = event.deltaY > 0;
     const backward = event.deltaY < 0;
-    if(forward && atBottom() && hasNext()) {
+    if(forwardLocked && event.timeStamp - lastWheel > WHEEL_IDLE) {
+        forwardLocked = false;
+    }
+    lastWheel = event.timeStamp;
+    if(forward && forwardLocked) {
         event.preventDefault();
-        if(!frozen(true)) {
-            applyPull(pull + event.deltaY, true);
+    } else if(forward && atBottom() && hasNext()) {
+        event.preventDefault();
+        if(applyPull(pull + event.deltaY, true)) {
+            forwardLocked = true;
         }
     } else if(backward && atTop() && hasPrevious()) {
         event.preventDefault();
-        if(!frozen(false)) {
-            applyPull(pull - event.deltaY, false);
-        }
+        applyPull(pull - event.deltaY, false);
     } else if(pull) {
         resetPull();
     }
 }, {passive: false});
 
 main.addEventListener('touchstart', (event) => {
-    touchStart = event.touches[0].clientY;
+    touchY = event.touches[0].clientY;
+    forwardLocked = false;
 }, {passive: true});
 
 main.addEventListener('touchmove', (event) => {
-    if(touchStart === undefined) {
+    if(touchY === undefined) {
         return;
     }
-    const distance = touchStart - event.touches[0].clientY;
-    if(distance > 0 && atBottom() && hasNext()) {
-        event.preventDefault();
-        if(frozen(true)) {
-            touchStart = event.touches[0].clientY;
-        } else {
-            applyPull(distance, true);
+    const y = event.touches[0].clientY;
+    const delta = touchY - y;
+    touchY = y;
+    if(delta > 0) {
+        if(forwardLocked) {
+            event.preventDefault();
+        } else if(atBottom() && hasNext()) {
+            event.preventDefault();
+            if(applyPull(pull + delta, true)) {
+                forwardLocked = true;
+            }
+        } else if(pull) {
+            resetPull();
         }
-    } else if(distance < 0 && atTop() && hasPrevious()) {
-        event.preventDefault();
-        if(frozen(false)) {
-            touchStart = event.touches[0].clientY;
-        } else {
-            applyPull(-distance, false);
+    } else if(delta < 0) {
+        if(atTop() && hasPrevious()) {
+            event.preventDefault();
+            applyPull(pull - delta, false);
+        } else if(pull) {
+            resetPull();
         }
     }
 }, {passive: false});
