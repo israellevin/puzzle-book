@@ -148,7 +148,7 @@ const expand = (entry, item) => {
     entry.classList.add('_expanded');
     entry.querySelector('._clueBody').hidden = false;
     state.expanded.add(item);
-    button.animate([{opacity: 1}, {opacity: 0}], {duration: 250, easing: 'ease'})
+    button.animate([{opacity: 1}, {opacity: 0}], {duration: 400, easing: 'ease'})
         .finished.then(() => {
             button.hidden = true;
             updateChrome();
@@ -278,7 +278,7 @@ const closeNote = () => {
             modal.classList.remove('_closing');
             modal.close();
         }
-    }, 220);
+    }, 340);
 };
 
 const renderNotes = () => {
@@ -576,20 +576,24 @@ main.addEventListener('touchmove', (event) => {
     }
 }, {passive: false});
 
+const scrollBehavior = () => (
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+);
+
 document.addEventListener('keydown', (event) => {
     if(event.key === 'ArrowDown' || event.key === ' ' || event.key === 'Space') {
         event.preventDefault();
         if(atBottom()) {
             goForward();
         } else {
-            main.scrollTop += main.clientHeight * 0.9;
+            main.scrollBy({top: main.clientHeight * 0.75, behavior: scrollBehavior()});
         }
     } else if(event.key === 'ArrowUp') {
         event.preventDefault();
         if(atTop()) {
             goBack('end');
         } else {
-            main.scrollTop -= main.clientHeight * 0.9;
+            main.scrollBy({top: -main.clientHeight * 0.75, behavior: scrollBehavior()});
         }
     } else if(event.key === 'Escape') {
         closeLists();

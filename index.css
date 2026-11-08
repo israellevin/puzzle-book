@@ -150,7 +150,7 @@ body {
     border-radius: 0.75rem;
     background-color: #ffffff;
     box-shadow: 0 20px 50px -30px rgba(76, 5, 25, 0.6);
-    animation: _appear 140ms ease;
+    animation: _appear 220ms ease;
 }
 
 ._dropdownItem {
@@ -263,14 +263,14 @@ h3._paragraph {
     font-size: 0.95rem;
     cursor: default;
     opacity: 0.55;
-    transition: opacity 160ms ease, box-shadow 160ms ease;
+    transition: opacity 260ms ease, box-shadow 260ms ease;
 }
 
 ._clueButton._active {
     cursor: pointer;
     opacity: 1;
     box-shadow: 0 0 0 3px #fbcfe8;
-    animation: _clue-pulse 1.4s ease-in-out infinite;
+    animation: _clue-pulse 2.2s ease-in-out infinite;
 }
 
 ._clueButton._active:hover {
@@ -283,7 +283,7 @@ h3._paragraph {
     border-inline-start: 3px solid #f9a8d4;
     border-radius: 0.75rem;
     background-color: #fff7fa;
-    animation: _appear 260ms ease;
+    animation: _appear 400ms ease;
 }
 
 ._clueBody ._paragraph {
@@ -317,7 +317,7 @@ h3._paragraph {
     font-size: 0.9rem;
     line-height: 1.75;
     color: #4b5563;
-    animation: _appear 220ms ease;
+    animation: _appear 340ms ease;
 }
 
 ._footnote {
@@ -361,7 +361,7 @@ h3._paragraph {
     color: #991b1b;
     font-size: 0.95rem;
     line-height: 1.7;
-    animation: _appear 220ms ease;
+    animation: _appear 340ms ease;
 }
 
 ._errorsTitle {
@@ -376,7 +376,7 @@ h3._paragraph {
     border-radius: 1rem;
     background-color: #fce7f3;
     font-size: 0.95rem;
-    animation: _appear 220ms ease;
+    animation: _appear 340ms ease;
 }
 
 ._quote {
@@ -417,7 +417,7 @@ h3._paragraph {
     color: #831843;
     cursor: pointer;
     transform: rotate(180deg);
-    transition: transform 400ms ease;
+    transition: transform 700ms ease;
 }
 
 ._asideSolution._turned {
@@ -439,7 +439,7 @@ h3._paragraph {
     letter-spacing: 0.03em;
     box-shadow: 0 1px 0 #ecd8bb, 0 8px 14px -10px rgba(76, 5, 25, 0.6);
     cursor: pointer;
-    transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+    transition: transform 280ms ease, box-shadow 280ms ease, background-color 280ms ease;
 }
 
 /* The perforated edge of the slip, where it can be pulled. */
@@ -486,20 +486,20 @@ h3._paragraph {
     box-shadow: 0 30px 60px -30px rgba(76, 5, 25, 0.55), inset 0 0 0 1px #ecd8bb;
     color: #3f3f46;
     font-size: 1rem;
-    animation: _slip-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1.15);
+    animation: _slip-in 400ms cubic-bezier(0.2, 0.9, 0.3, 1.15);
 }
 
 ._modal._closing {
-    animation: _slip-out 200ms ease forwards;
+    animation: _slip-out 320ms ease forwards;
 }
 
 ._modal::backdrop {
     background-color: rgba(40, 20, 30, 0.35);
-    animation: _fade-in 200ms ease;
+    animation: _fade-in 320ms ease;
 }
 
 ._modal._closing::backdrop {
-    animation: _fade-out 200ms ease forwards;
+    animation: _fade-out 320ms ease forwards;
 }
 
 @keyframes _slip-in {
@@ -542,7 +542,7 @@ h3._paragraph {
     height: 7rem;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 120ms ease;
+    transition: opacity 220ms ease;
 }
 
 ._shadeForward {
