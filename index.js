@@ -416,7 +416,8 @@ let lastWheel = 0;
 let touchY;
 
 const writeHash = () => {
-    history.replaceState(null, '', state.book.hash());
+    // Keep the query string, so a `?sheet=` override survives paging.
+    history.replaceState(null, '', `${location.pathname}${location.search}${state.book.hash()}`);
 };
 
 const updateItemIndex = () => {

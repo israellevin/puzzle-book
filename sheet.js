@@ -1,6 +1,11 @@
 // Get the data from the Google Sheet.
-const SHEET_ID = '1dBa9n4e4lalgaLHgemz9O6eQ3mkDIJQ_iKDmLGfdN0U';
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}`;
+const DEFAULT_SHEET_ID = '1dBa9n4e4lalgaLHgemz9O6eQ3mkDIJQ_iKDmLGfdN0U';
+
+// `?sheet=<id>` reads another spreadsheet, for trying a copy without touching the default.
+const sheetUrl = () => {
+    const id = new URLSearchParams(window.location.search).get('sheet') || DEFAULT_SHEET_ID;
+    return `https://docs.google.com/spreadsheets/d/${id}`;
+};
 
 const ROW_HEADER_NAMES = {
     itemType: 'סוג דבר',
@@ -184,12 +189,28 @@ const readItems = (rows) => {
     return {items, errors};
 };
 
+// A private sheet answers with a sign-in page, so the export has to be checked before parsing.
+const readCsv = async(url) => {
+    // No gid: the export defaults to the first tab, while gid=0 only exists when that tab
+    // happens to carry it — an imported workbook's tabs usually do not.
+    const response = await fetch(`${url}/export?format=csv`);
+    const type = response.headers.get('content-type') || '';
+    if(!response.ok || !type.includes('csv')) {
+        throw new Error('the sheet could not be read; share it with anyone who has the link');
+    }
+    return response.text();
+};
+
 export const get = async() => {
+    const url = sheetUrl();
     // The csv export is current, while the gviz snapshot of the same sheet can lag behind.
     const [csv, page] = await Promise.all([
-        fetch(`${SHEET_URL}/export?format=csv&gid=0`).then((response) => response.text()),
-        fetch(`${SHEET_URL}/edit`).then((response) => response.text()).catch(() => '')
+        readCsv(url),
+        fetch(`${url}/edit`).then((response) => response.text()).catch(() => '')
     ]);
     const {items, errors} = readItems(readRows(csv));
+    if(!items.length) {
+        throw new Error('no items could be read from the sheet');
+    }
     return {title: readTitle(page), items, errors};
 };
