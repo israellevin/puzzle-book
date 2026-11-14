@@ -168,7 +168,7 @@ const renderClue = (item) => {
     button.type = 'button';
     button.disabled = true;
     button.setAttribute('aria-label', label);
-    button.append(make('span', `_clueIcon _icon-${item.type}`), make('span', '_clueLabel', label));
+    button.append(label);
     const body = make('div', '_clueBody');
     body.hidden = true;
     for(const paragraph of item.paragraphs) {
@@ -513,6 +513,8 @@ forwardButton.type = 'button';
 search.type = 'search';
 search.placeholder = 'חיפש (לא פעיל)';
 search.disabled = true;
+chapterList.hidden = true;
+pageList.hidden = true;
 
 chapterButton.addEventListener('click', () => {
     openList(chapterList, state.pages
