@@ -73,7 +73,7 @@ The browser's location bar, keeping the page position within the book in the fra
 - Buttons to page forward and back
 - Search box for searching within the book (not implemented yet)
 
-The title and the two selectors sit at one end of the header, the paging buttons and the search box at the other. The `chapterName` item appears here.
+The title and the two selectors sit at one end of the header, the paging buttons and the search box at the other. The `chapterName` item appears here. A puzzle page carries its name preceded by its puzzle number and a box page by a star, and the same wording is used in the header, in the list of pages and in the page's own title.
 
 On a narrow screen the header stacks instead: the title, the chapter name and the page name each on their own line, with the paging buttons and the search box below them.
 

@@ -1,6 +1,7 @@
 // Display the puzzle book.
 import * as book from './book.js';
 import * as sheet from './sheet.js';
+import {ILLUSTRATIONS} from './illustrations.js';
 
 const CLUE_LABELS = {
     teaSpoon: 'כפית',
@@ -79,11 +80,23 @@ const chapterOf = (current) => current.chapter && current.chapter.title
     ? current.chapter.title.paragraphs[0].text
     : '';
 
+// A page's own name, carrying its puzzle number when it belongs to one. The header, the page
+// list and the page's title all read it from here, so they can never disagree.
+const pageTitle = (current) => {
+    const name = current.title ? current.title.paragraphs[0].text : '';
+    const hasNumber = current.kind === 'puzzle' && current.puzzleNumber !== undefined
+        && current.puzzleNumber !== '';
+    if(hasNumber) {
+        return `${current.puzzleNumber} · ${name}`;
+    }
+    return current.kind === 'box' ? `★ · ${name}` : name;
+};
+
 const pageLabel = (current) => {
     if(current.kind === 'chapter') {
         return 'הקדמה';
     }
-    return current.title ? current.title.paragraphs[0].text : '';
+    return pageTitle(current);
 };
 
 // --- text, clues and footnotes -------------------------------------------
@@ -125,9 +138,10 @@ const renderParagraph = (paragraph, tagName='p') => {
 
 const renderFile = (file) => {
     const figure = make('figure', '_illustration');
-    if(file) {
+    const source = ILLUSTRATIONS[file] || file;
+    if(source) {
         const image = make('img');
-        image.src = file;
+        image.src = source;
         image.alt = file;
         figure.append(image);
     } else {
@@ -136,10 +150,14 @@ const renderFile = (file) => {
     return figure;
 };
 
-const renderItem = (item) => {
-    const paragraphs = item.paragraphs.map((paragraph, index) => (
-        renderParagraph(paragraph, index === 0 && HEADING_TAGS[item.type] ? HEADING_TAGS[item.type] : 'p')
-    ));
+const renderItem = (item, firstText) => {
+    const paragraphs = item.paragraphs.map((paragraph, index) => {
+        const tagName = index === 0 && HEADING_TAGS[item.type] ? HEADING_TAGS[item.type] : 'p';
+        if(index === 0 && firstText !== undefined) {
+            return make(tagName, '_paragraph', firstText);
+        }
+        return renderParagraph(paragraph, tagName);
+    });
     if(item.type === 'illustration') {
         return [...(item.files.length ? item.files : [undefined]).map(renderFile), ...paragraphs];
     }
@@ -355,7 +373,9 @@ const renderMain = () => {
         if(item.type === 'chapterName' || CLUE_LABELS[item.type]) {
             continue;
         }
-        const elements = renderItem(item);
+        const elements = item === current.title
+            ? renderItem(item, pageTitle(current))
+            : renderItem(item);
         state.itemElement.set(item, elements[0]);
         pageBody.append(...elements);
     }
@@ -553,6 +573,19 @@ modal.addEventListener('close', () => {
     state.openParent = undefined;
 });
 
+// Footnote links scroll by hand: letting the hash change would lose the position hash.
+pageBody.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href^="#fn-"], a[href^="#fnref-"]');
+    if(!link) {
+        return;
+    }
+    const target = document.getElementById(link.getAttribute('href').slice(1));
+    if(target) {
+        event.preventDefault();
+        target.scrollIntoView({block: 'center', behavior: scrollBehavior()});
+    }
+});
+
 main.addEventListener('scroll', () => {
     updateChrome();
     writeHash();
@@ -618,14 +651,14 @@ const scrollBehavior = () => (
 );
 
 document.addEventListener('keydown', (event) => {
-    if(event.key === 'ArrowDown' || event.key === ' ' || event.key === 'Space') {
+    if(event.key === 'ArrowDown' || event.key === 'PageDown' || event.key === ' ' || event.key === 'Space') {
         event.preventDefault();
         if(atBottom()) {
             goForward();
         } else {
             main.scrollBy({top: main.clientHeight * 0.75, behavior: scrollBehavior()});
         }
-    } else if(event.key === 'ArrowUp') {
+    } else if(event.key === 'ArrowUp' || event.key === 'PageUp') {
         event.preventDefault();
         if(atTop()) {
             goBack('end');
