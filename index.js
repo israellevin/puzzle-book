@@ -34,6 +34,13 @@ const WHEEL_IDLE = 150;
 
 const NARROW = '(max-width: 80rem)';
 
+// Reading text sizes, smallest first, and the step a reader starts at.
+const FONT_STEPS = [0.85, 0.95, 1, 1.1, 1.25, 1.45];
+const FONT_DEFAULT = 2;
+
+const STORE_TEXT = 'puzzleBook.textStep';
+const STORE_THEME = 'puzzleBook.dark';
+
 const make = (tagName, className, text) => {
     const element = document.createElement(tagName);
     if(className) {
@@ -56,6 +63,7 @@ const state = {
 
 const root = make('div', '_book');
 const header = make('header', '_header');
+const compactButton = make('button', '_compact');
 const headerStart = make('div', '_headerSide _headerStart');
 const headerEnd = make('div', '_headerSide _headerEnd');
 const bookTitle = make('span', '_bookTitle');
@@ -64,6 +72,9 @@ const pageButton = make('button', '_selector _pageSelector');
 const backButton = make('button', '_pager _pagerBack', '‹');
 const forwardButton = make('button', '_pager _pagerForward', '›');
 const search = make('input', '_search');
+const smallerButton = make('button', '_setting', 'A−');
+const largerButton = make('button', '_setting', 'A+');
+const themeButton = make('button', '_setting');
 const chapterList = make('div', '_dropdown');
 const pageList = make('div', '_dropdown');
 const stage = make('div', '_stage');
@@ -399,6 +410,12 @@ const closeLists = () => {
     pageList.hidden = true;
 };
 
+const setHeaderOpen = (open) => {
+    header.classList.toggle('_open', open);
+    compactButton.setAttribute('aria-expanded', String(open));
+    closeLists();
+};
+
 const openList = (list, items, selected) => {
     list.replaceChildren();
     for(const item of items) {
@@ -419,7 +436,47 @@ const renderHeader = () => {
     bookTitle.textContent = state.title;
     chapterButton.textContent = chapterOf(current);
     pageButton.textContent = pageLabel(current);
+    compactButton.textContent = [chapterOf(current), pageLabel(current)].filter(Boolean).join(' · ');
 };
+
+// --- settings -------------------------------------------------------------
+
+const storedStep = localStorage.getItem(STORE_TEXT);
+let textStep = storedStep === null ? FONT_DEFAULT : Number(storedStep);
+if(!FONT_STEPS[textStep]) {
+    textStep = FONT_DEFAULT;
+}
+
+const applyTextSize = () => {
+    document.documentElement.style.setProperty('--text-scale', String(FONT_STEPS[textStep]));
+    smallerButton.disabled = textStep === 0;
+    largerButton.disabled = textStep === FONT_STEPS.length - 1;
+};
+
+const stepTextSize = (direction) => {
+    textStep = Math.min(Math.max(textStep + direction, 0), FONT_STEPS.length - 1);
+    localStorage.setItem(STORE_TEXT, String(textStep));
+    applyTextSize();
+};
+
+const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+const applyTheme = (dark) => {
+    document.documentElement.classList.toggle('_dark', dark);
+    themeButton.textContent = dark ? '☀' : '☾';
+    themeButton.setAttribute('aria-label', dark ? 'מצב יום' : 'מצב לילה');
+};
+
+const toggleTheme = () => {
+    const dark = !document.documentElement.classList.contains('_dark');
+    localStorage.setItem(STORE_THEME, dark ? '1' : '0');
+    applyTheme(dark);
+};
+
+// Follow the system until the reader picks a theme for themselves.
+const storedTheme = localStorage.getItem(STORE_THEME);
+applyTheme(storedTheme === null ? darkQuery.matches : storedTheme === '1');
+applyTextSize();
 
 // --- paging ---------------------------------------------------------------
 
@@ -519,22 +576,36 @@ const applyPull = (amount, forward) => {
 // --- wiring ---------------------------------------------------------------
 
 root.append(header, stage, modal);
-header.append(headerStart, headerEnd, chapterList, pageList);
+header.append(compactButton, headerStart, headerEnd, chapterList, pageList);
 headerStart.append(bookTitle, chapterButton, pageButton);
-headerEnd.append(backButton, forwardButton, search);
+headerEnd.append(backButton, forwardButton, search, smallerButton, largerButton, themeButton);
 stage.append(main, shadeBack, shadeForward);
 main.append(pageBody);
 modal.append(modalBody);
 
+compactButton.type = 'button';
+compactButton.setAttribute('aria-expanded', 'false');
 chapterButton.type = 'button';
 pageButton.type = 'button';
 backButton.type = 'button';
 forwardButton.type = 'button';
+smallerButton.type = 'button';
+largerButton.type = 'button';
+smallerButton.setAttribute('aria-label', 'הקטנת גופן');
+largerButton.setAttribute('aria-label', 'הגדלת גופן');
+themeButton.type = 'button';
 search.type = 'search';
 search.placeholder = 'חיפש (לא פעיל)';
 search.disabled = true;
 chapterList.hidden = true;
 pageList.hidden = true;
+
+compactButton.addEventListener('click', () => {
+    setHeaderOpen(!header.classList.contains('_open'));
+});
+smallerButton.addEventListener('click', () => stepTextSize(-1));
+largerButton.addEventListener('click', () => stepTextSize(1));
+themeButton.addEventListener('click', toggleTheme);
 
 chapterButton.addEventListener('click', () => {
     openList(chapterList, state.pages
@@ -585,6 +656,8 @@ pageBody.addEventListener('click', (event) => {
         target.scrollIntoView({block: 'center', behavior: scrollBehavior()});
     }
 });
+
+main.addEventListener('click', () => setHeaderOpen(false));
 
 main.addEventListener('scroll', () => {
     updateChrome();

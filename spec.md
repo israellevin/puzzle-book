@@ -72,10 +72,13 @@ The browser's location bar, keeping the page position within the book in the fra
 - Name of the current puzzle, box, or "intro", expanding on click to a list of links to all pages in the current chapter
 - Buttons to page forward and back
 - Search box for searching within the book (not implemented yet)
+- Buttons to shrink and enlarge the reading text, and to switch between a light and a dark theme
 
-The title and the two selectors sit at one end of the header, the paging buttons and the search box at the other. The `chapterName` item appears here. A puzzle page carries its name preceded by its puzzle number and a box page by a star, and the same wording is used in the header, in the list of pages and in the page's own title.
+The title and the two selectors sit at one end of the header, the paging buttons, the search box and the settings buttons at the other. The `chapterName` item appears here. A puzzle page carries its name preceded by its puzzle number and a box page by a star, and the same wording is used in the header, in the list of pages and in the page's own title.
 
-On a narrow screen the header stacks instead: the title, the chapter name and the page name each on their own line, with the paging buttons and the search box below them.
+On a screen narrower than 30rem the header starts collapsed to a single faint line naming the chapter and the page. Tapping that line expands the header, and tapping it again collapses it. The expanded header stacks: the title, the chapter name and the page name each on their own line, with the paging buttons, the search box and the settings buttons below them.
+
+The text size applies to the page's text, its clues, footnotes and margin notes, not to the header, and it is remembered between visits. The theme follows the system until the reader picks one, and is remembered from then on.
 
 ### `main`
 
