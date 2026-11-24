@@ -317,6 +317,18 @@ h3._paragraph {
     font-size: calc(1.3rem * var(--text-scale));
 }
 
+/* The small line naming a page's kind, above its title. */
+._pageKind {
+    margin-top: 1.75rem;
+    font-size: calc(0.85rem * var(--text-scale));
+    letter-spacing: 0.03em;
+    color: var(--ink-faint);
+}
+
+._pageKind + ._paragraph {
+    margin-top: 0.2rem;
+}
+
 ._illustration {
     display: flex;
     align-items: center;

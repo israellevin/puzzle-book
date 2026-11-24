@@ -68,13 +68,13 @@ The browser's location bar, keeping the page position within the book in the fra
 ### `header`
 
 - Book's title, extracted from the name of the spreadsheet
-- Name of the current chapter, expanding on click to a list of links to all chapters
-- Name of the current puzzle, box, or "intro", expanding on click to a list of links to all pages in the current chapter
+- Number and name of the current chapter, expanding on click to a list of links to all chapters
+- Number and name of the current puzzle, star and name of the current box, or "intro", expanding on click to a list of links to all pages in the current chapter
 - Buttons to page forward and back
 - Search box for searching within the book (not implemented yet)
 - Buttons to shrink and enlarge the reading text, and to switch between a light and a dark theme
 
-The title and the two selectors sit at one end of the header, the paging buttons, the search box and the settings buttons at the other. The `chapterName` item appears here. A puzzle page carries its name preceded by its puzzle number and a box page by a star, and the same wording is used in the header, in the list of pages and in the page's own title.
+The title and the two selectors sit at one end of the header, the paging buttons, the search box and the settings buttons at the other. The `chapterName` item appears here. A puzzle page is named `<number>. <name>` and a box page `★ <name>`, a chapter `<number>. <name>`, and the same wording is used in the header and in the lists of chapters and pages.
 
 On a screen narrower than 30rem the header starts collapsed to a single faint line naming the chapter and the page. Tapping that line expands the header, and tapping it again collapses it. The expanded header stacks: the title, the chapter name and the page name each on their own line, with the paging buttons, the search box and the settings buttons below them.
 
@@ -82,7 +82,7 @@ The text size applies to the page's text, its clues, footnotes and margin notes,
 
 ### `main`
 
-The main page, scrollable, used to display long texts. All items not mentioned elsewhere are displayed here.
+The main page, scrollable, used to display long texts. All items not mentioned elsewhere are displayed here. Above a chapter's or a puzzle's title sits a small line naming its kind and number: `פרק מספר <number>` or `חידה מספר <number>`. A box has no number, so its title carries the star before the name instead.
 
 #### Clues and solutions
 

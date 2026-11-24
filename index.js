@@ -91,24 +91,52 @@ const chapterOf = (current) => current.chapter && current.chapter.title
     ? current.chapter.title.paragraphs[0].text
     : '';
 
-// A page's own name, carrying its puzzle number when it belongs to one. The header, the page
-// list and the page's title all read it from here, so they can never disagree.
-const pageTitle = (current) => {
-    const name = current.title ? current.title.paragraphs[0].text : '';
-    const hasNumber = current.kind === 'puzzle' && current.puzzleNumber !== undefined
-        && current.puzzleNumber !== '';
-    if(hasNumber) {
-        return `${current.puzzleNumber} · ${name}`;
-    }
-    return current.kind === 'box' ? `★ · ${name}` : name;
+// A chapter's number and name, as the header and the list of chapters show it.
+const chapterLabel = (current) => {
+    const name = chapterOf(current);
+    const number = current.chapter ? current.chapter.chapterNumber : undefined;
+    return number === undefined || number === '' ? name : `${number}. ${name}`;
 };
 
+const pageName = (current) => (current.title ? current.title.paragraphs[0].text : '');
+
+// How the header and the list of pages name a page. The title in the text stays plain; the
+// small line above it carries the number.
 const pageLabel = (current) => {
     if(current.kind === 'chapter') {
         return 'הקדמה';
     }
-    return pageTitle(current);
+    const name = pageName(current);
+    if(current.kind === 'box') {
+        return `★ ${name}`;
+    }
+    return current.puzzleNumber === undefined || current.puzzleNumber === ''
+        ? name
+        : `${current.puzzleNumber}. ${name}`;
 };
+
+const numberLabel = (kind, number) => (
+    number === undefined || number === '' ? kind : `${kind} מספר ${number}`
+);
+
+// A chapter or a puzzle gets a small line naming its number above the title; a box, unnumbered,
+// gets none.
+const pageKind = (current) => {
+    if(current.kind === 'chapter') {
+        return numberLabel('פרק', current.chapterNumber);
+    }
+    if(current.kind === 'puzzle') {
+        return numberLabel('חידה', current.puzzleNumber);
+    }
+    return undefined;
+};
+
+// The element the kind line goes above: the page's title, or the subtitle that opens a chapter.
+const titleAnchor = (current) => (
+    current.kind === 'chapter'
+        ? current.items.find((item) => item.type === 'chapterSubtitle')
+        : current.title
+);
 
 // --- text, clues and footnotes -------------------------------------------
 
@@ -380,12 +408,17 @@ const renderMain = () => {
     if(current.errors.length) {
         pageBody.append(renderErrors(current.errors));
     }
+    const kind = pageKind(current);
+    const anchor = kind ? titleAnchor(current) : undefined;
     for(const item of current.items) {
         if(item.type === 'chapterName' || CLUE_LABELS[item.type]) {
             continue;
         }
-        const elements = item === current.title
-            ? renderItem(item, pageTitle(current))
+        if(item === anchor) {
+            pageBody.append(make('p', '_pageKind', kind));
+        }
+        const elements = item === current.title && current.kind === 'box'
+            ? renderItem(item, pageLabel(current))
             : renderItem(item);
         state.itemElement.set(item, elements[0]);
         pageBody.append(...elements);
@@ -434,9 +467,9 @@ const openList = (list, items, selected) => {
 const renderHeader = () => {
     const current = page();
     bookTitle.textContent = state.title;
-    chapterButton.textContent = chapterOf(current);
+    chapterButton.textContent = chapterLabel(current);
     pageButton.textContent = pageLabel(current);
-    compactButton.textContent = [chapterOf(current), pageLabel(current)].filter(Boolean).join(' · ');
+    compactButton.textContent = [chapterLabel(current), pageLabel(current)].filter(Boolean).join(' · ');
 };
 
 // --- settings -------------------------------------------------------------
@@ -609,7 +642,7 @@ themeButton.addEventListener('click', toggleTheme);
 
 chapterButton.addEventListener('click', () => {
     openList(chapterList, state.pages
-        .map((candidate, index) => ({label: chapterOf(candidate), page: index}))
+        .map((candidate, index) => ({label: chapterLabel(candidate), page: index}))
         .filter((entry) => state.pages[entry.page].kind === 'chapter'), state.book.page);
 });
 pageButton.addEventListener('click', () => {
